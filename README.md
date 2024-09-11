@@ -80,4 +80,4 @@ This setup allows TanStack Router to handle all routes within the SPA.
 
 - [Astro documentation](https://docs.astro.build)
 - [TanStack Router documentation](https://tanstack.com/router/latest)
-- [React documentation](https://react.dev/))
+- [React documentation](https://react.dev/)
