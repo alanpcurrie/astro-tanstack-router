@@ -2,7 +2,7 @@
 
 This project is a starter template for building a Single Page Application (SPA) using Astro and TanStack Router.
 
-## 🚀 Project Structure
+## Project Structure
 
 Inside of your Astro project, you'll see the following folders and files:
 
@@ -27,7 +27,7 @@ Inside of your Astro project, you'll see the following folders and files:
 - `src/pages/[...all].astro`: This is the catch-all route that serves your SPA.
 - Other components in `src/components/` represent different pages or sections of your SPA.
 
-## 🧞 Commands
+## Commands
 
 All commands are run from the root of the project, from a terminal:
 
