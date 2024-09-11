@@ -1,16 +1,6 @@
-# Astro Starter Kit: Basics
+# Astro TanStack Router SPA Starter
 
-```sh
-npm create astro@latest -- --template basics
-```
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+This project is a starter template for building a Single Page Application (SPA) using Astro and TanStack Router.
 
 ## 🚀 Project Structure
 
@@ -22,19 +12,20 @@ Inside of your Astro project, you'll see the following folders and files:
 │   └── favicon.svg
 ├── src/
 │   ├── components/
-│   │   └── Card.astro
+│   │   ├── app.tsx
 │   ├── layouts/
 │   │   └── Layout.astro
 │   └── pages/
-│       └── index.astro
-└── package.json
+│       └── [...all].astro
+├── astro.config.mjs
+├── biome.json
+├── package.json
+└── tsconfig.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
+- `src/components/app.tsx`: This is the main React component that sets up TanStack Router.
+- `src/pages/[...all].astro`: This is the catch-all route that serves your SPA.
+- Other components in `src/components/` represent different pages or sections of your SPA.
 
 ## 🧞 Commands
 
@@ -42,13 +33,51 @@ All commands are run from the root of the project, from a terminal:
 
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+| `pnpm install`            | Installs dependencies                            |
+| `pnpm dev`                | Starts local dev server at `localhost:4321`      |
+| `pnpm build`              | Build your production site to `./dist/`          |
+| `pnpm preview`            | Preview your build locally, before deploying     |
+| `pnpm astro ...`          | Run CLI commands like `astro add`, `astro check` |
+| `pnpm astro -- --help`    | Get help using the Astro CLI                     |
 
-## 👀 Want to learn more?
+## 🛠️ Technologies Used
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- [Astro](https://astro.build)
+- [React](https://reactjs.org)
+- [TanStack Router](https://tanstack.com/router)
+- [TypeScript](https://www.typescriptlang.org)
+- [Biome](https://biomejs.dev/guides/getting-started)
+
+## Getting Started
+
+1. Clone this repository
+2. Install dependencies with `pnpm install`
+3. Start the development server with `pnpm dev`
+
+## SPA Entry Point
+
+The SPA entry point is a catch-all route in the `pages` directory. The file `[...all].astro` contains:
+
+```astro
+---
+import { App } from "~components/app";
+import Layout from "~layouts/Layout.astro";
+---
+
+<Layout title="Dashboard">
+  <App client:only="react" />
+</Layout>
+```
+
+This setup allows TanStack Router to handle all routes within the SPA.
+
+## Configuration
+
+- The project uses path aliases for cleaner imports. Check `tsconfig.json` and `astro.config.mjs` for the alias configurations.
+- TanStack Router is set up in `src/components/app.tsx`.
+
+## Links
+
+- [Astro documentation](https://docs.astro.build)
+- [TanStack Router documentation](https://tanstack.com/router/latest)
+- [React documentation](https://react.dev/))
