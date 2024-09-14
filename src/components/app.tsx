@@ -7,6 +7,7 @@ import {
 	createRouter,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import Monty from "./Monty";
 
 const Index = () => (
 	<h1
@@ -89,6 +90,18 @@ const Layout = () => (
 						Profile
 					</Link>
 				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
+						to="/monty"
+						style={{
+							color: "white",
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						Monty
+					</Link>
+				</li>
 			</ul>
 		</nav>
 		<hr />
@@ -121,10 +134,17 @@ const profileRoute = createRoute({
 	component: Profile,
 });
 
+const montyRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/monty",
+	component: Monty,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	settingsRoute,
 	profileRoute,
+	montyRoute,
 ]);
 const router = createRouter({ routeTree });
 
