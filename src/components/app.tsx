@@ -1,4 +1,9 @@
 import {
+	FluentProvider,
+	type Theme,
+	webLightTheme,
+} from "@fluentui/react-components";
+import {
 	Link,
 	Outlet,
 	RouterProvider,
@@ -8,41 +13,72 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import Monty from "./Monty";
+import System from "./System";
+
+const COLOR_PINK = "#ff0090";
+const COLOR_CYAN = "#00e5ff";
+const COLOR_DARK_BG = "#0f0e17";
+const COLOR_LIGHT_TEXT = "#f4f4f8";
+const COLOR_MINT = "#00f5d4";
+const COLOR_PURPLE = "#a239ca";
+const COLOR_ORANGE = "#ff6f3c";
+const COLOR_VIOLET = "#e500ff";
+const COLOR_YELLOW = "#ffde7d";
+const COLOR_WHITE = "white";
+const COLOR_NAV_BG = "#333";
+
+const FONT_FAMILY_COURIER = "'Courier New', Courier, monospace";
+
+const BORDER_RADIUS_MEDIUM = "12px";
+const BORDER_RADIUS_SMALL = "8px";
+
+const SHADOW_SMALL = `0px 0px 10px ${COLOR_PINK}`;
+const SHADOW_LARGE = `0px 0px 20px ${COLOR_CYAN}`;
+
+const SPACING_HORIZONTAL_M = "16px";
+const SPACING_VERTICAL_M = "12px";
+const SPACING_HORIZONTAL_L = "24px";
+
+const cyberpunkTheme: Theme = {
+	...webLightTheme,
+	colorBrandBackground: COLOR_PINK,
+	colorBrandBackgroundHover: COLOR_CYAN,
+	colorNeutralBackground1: COLOR_DARK_BG,
+	colorNeutralForeground1: COLOR_LIGHT_TEXT,
+	colorBrandForeground1: COLOR_MINT,
+	colorNeutralStroke1: COLOR_PURPLE,
+	colorBrandBackgroundPressed: COLOR_ORANGE,
+	colorNeutralForeground2: COLOR_YELLOW,
+
+	fontFamilyBase: FONT_FAMILY_COURIER,
+	fontFamilyMonospace: FONT_FAMILY_COURIER,
+	fontWeightBold: 700,
+
+	borderRadiusMedium: BORDER_RADIUS_MEDIUM,
+	borderRadiusSmall: BORDER_RADIUS_SMALL,
+
+	shadow2: SHADOW_SMALL,
+	shadow4: SHADOW_LARGE,
+
+	spacingHorizontalM: SPACING_HORIZONTAL_M,
+	spacingVerticalM: SPACING_VERTICAL_M,
+	spacingHorizontalL: SPACING_HORIZONTAL_L,
+};
 
 const Index = () => (
-	<h1
-		style={{
-			color: "white",
-		}}
-	>
-		Welcome to the Dashboard
-	</h1>
+	<h1 style={{ color: COLOR_WHITE }}>Welcome to the Dashboard</h1>
 );
-const Settings = () => (
-	<h1
-		style={{
-			color: "white",
-		}}
-	>
-		Settings
-	</h1>
-);
-const Profile = () => (
-	<h1
-		style={{
-			color: "white",
-		}}
-	>
-		Profile
-	</h1>
-);
+const Settings = () => <h1 style={{ color: COLOR_WHITE }}>Settings</h1>;
+const Profile = () => <h1 style={{ color: COLOR_WHITE }}>Profile</h1>;
 
 const Layout = () => (
-	<div style={{ fontFamily: "Arial, sans-serif" }}>
+	<div style={{ fontFamily: FONT_FAMILY_COURIER }}>
 		<nav
 			style={{
-				backgroundColor: "#333",
+				backgroundColor: COLOR_NAV_BG,
 				padding: "10px 0",
+				borderRadius: BORDER_RADIUS_MEDIUM,
+				boxShadow: SHADOW_LARGE,
 			}}
 		>
 			<ul
@@ -58,7 +94,7 @@ const Layout = () => (
 					<Link
 						to="/"
 						style={{
-							color: "white",
+							color: COLOR_PINK,
 							textDecoration: "none",
 							fontSize: "16px",
 						}}
@@ -70,7 +106,7 @@ const Layout = () => (
 					<Link
 						to="/settings"
 						style={{
-							color: "white",
+							color: COLOR_CYAN,
 							textDecoration: "none",
 							fontSize: "16px",
 						}}
@@ -82,7 +118,7 @@ const Layout = () => (
 					<Link
 						to="/profile"
 						style={{
-							color: "white",
+							color: COLOR_MINT,
 							textDecoration: "none",
 							fontSize: "16px",
 						}}
@@ -94,7 +130,7 @@ const Layout = () => (
 					<Link
 						to="/monty"
 						style={{
-							color: "white",
+							color: COLOR_VIOLET,
 							textDecoration: "none",
 							fontSize: "16px",
 						}}
@@ -102,10 +138,28 @@ const Layout = () => (
 						Monty
 					</Link>
 				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
+						to="/system"
+						style={{
+							color: COLOR_ORANGE,
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						System
+					</Link>
+				</li>
 			</ul>
 		</nav>
 		<hr />
-		<div style={{ padding: "20px" }}>
+		<div
+			style={{
+				padding: "20px",
+				backgroundColor: COLOR_DARK_BG,
+				borderRadius: BORDER_RADIUS_SMALL,
+			}}
+		>
 			<Outlet />
 		</div>
 		<TanStackRouterDevtools />
@@ -140,14 +194,26 @@ const montyRoute = createRoute({
 	component: Monty,
 });
 
+const systemRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/system",
+	component: System,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	settingsRoute,
 	profileRoute,
 	montyRoute,
+	systemRoute,
 ]);
+
 const router = createRouter({ routeTree });
 
 export function App() {
-	return <RouterProvider router={router} />;
+	return (
+		<FluentProvider theme={cyberpunkTheme}>
+			<RouterProvider router={router} />
+		</FluentProvider>
+	);
 }
