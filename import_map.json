@@ -1,0 +1,11 @@
+{
+    "imports": {
+      "~components/": "./src/components/",
+      "~layouts/": "./src/layouts/",
+      "~pages/": "./src/pages/",
+      "~styles/": "./src/styles/",
+      "~utils/": "./src/utils/",
+      "~assets/": "./src/assets/"
+    }
+  }
+  
