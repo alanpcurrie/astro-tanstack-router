@@ -1,0 +1,41 @@
+nodes:
+  - id: "1"
+    type: "custom"
+    position:
+      x: 0
+      y: 0
+    data:
+      label: "Main Service"
+      status: "online"
+      description: "Primary service node"
+
+  - id: "2"
+    type: "custom"
+    position:
+      x: 200
+      y: 100
+    data:
+      label: "Database"
+      status: "online"
+      description: "PostgreSQL Database"
+
+  - id: "3"
+    type: "custom"
+    position:
+      x: 400
+      y: 0
+    data:
+      label: "Cache"
+      status: "warning"
+      description: "Redis Cache"
+
+edges:
+  - id: "e1-2"
+    source: "1"
+    target: "2"
+    animated: true
+
+  - id: "e1-3"
+    source: "1"
+    target: "3"
+    animated: true

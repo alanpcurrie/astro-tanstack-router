@@ -1,4 +1,7 @@
 import {
+	type BrandVariants,
+	createDarkTheme,
+	createLightTheme,
 	FluentProvider,
 	type Theme,
 	webLightTheme,
@@ -12,8 +15,38 @@ import {
 	createRouter,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import Monty from "./Monty";
-import System from "./System";
+import Monty from "~components/Monty";
+import System from "~components/System";
+import FlowState from "~components/FlowState";
+import SystemFlow from "~components/SystemFlow";
+import MermaidFlow from "~components/MermaidFlow";
+
+const cazoo: BrandVariants = { 
+	10: "#060201",
+	20: "#24120B",
+	30: "#3E1A13",
+	40: "#532117",
+	50: "#69271B",
+	60: "#802D1F",
+	70: "#983323",
+	80: "#B03827",
+	90: "#C93E2B",
+	100: "#DA4E37",
+	110: "#E2654C",
+	120: "#E97A62",
+	130: "#EF8F79",
+	140: "#F5A390",
+	150: "#F9B8A7",
+	160: "#FCCCBF"
+};
+
+const lightTheme: Theme = {
+	...createLightTheme(cazoo), 
+};
+
+const darkTheme: Theme = {
+	...createDarkTheme(cazoo), 
+};
 
 const COLOR_PINK = "#ff0090";
 const COLOR_CYAN = "#00e5ff";
@@ -26,6 +59,7 @@ const COLOR_VIOLET = "#e500ff";
 const COLOR_YELLOW = "#ffde7d";
 const COLOR_WHITE = "white";
 const COLOR_NAV_BG = "#333";
+const COLOR_MAGENTA = "#ff00ff";
 
 const FONT_FAMILY_COURIER = "'Courier New', Courier, monospace";
 
@@ -150,6 +184,42 @@ const Layout = () => (
 						System
 					</Link>
 				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
+						to="/system-flow"
+						style={{
+							color: COLOR_CYAN,
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						System Flow
+					</Link>
+				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
+						to="/flow"
+						style={{
+							color: COLOR_MAGENTA,
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						Flow
+					</Link>
+				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
+						to="/mermaid-flow"
+						style={{
+							color: COLOR_YELLOW,
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						Mermaid Flow
+					</Link>
+				</li>
 			</ul>
 		</nav>
 		<hr />
@@ -200,12 +270,33 @@ const systemRoute = createRoute({
 	component: System,
 });
 
+const systemFlowRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/system-flow",
+	component: SystemFlow,
+});
+
+const flowRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/flow",
+	component: FlowState,
+});
+
+const mermaidFlowRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/mermaid-flow",
+	component: MermaidFlow,
+});
+
 const routeTree = rootRoute.addChildren([
 	indexRoute,
 	settingsRoute,
 	profileRoute,
 	montyRoute,
 	systemRoute,
+	systemFlowRoute,
+	flowRoute,
+	mermaidFlowRoute,
 ]);
 
 const router = createRouter({ routeTree });

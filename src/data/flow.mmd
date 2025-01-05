@@ -1,0 +1,10 @@
+flowchart TD
+    A[Frontend Service]{"status": "online", "description": "React Application"}
+    B[API Gateway]{"status": "online", "description": "API Gateway Service"}
+    C[Auth Service]{"status": "warning", "description": "Authentication Service"}
+    D[Database]{"status": "online", "description": "PostgreSQL Database"}
+    
+    A -->|HTTP/REST| B
+    B -->|gRPC| C
+    C -->|TCP| D
+    B -->|TCP| D

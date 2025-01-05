@@ -1,18 +1,32 @@
 import react from "@astrojs/react";
-// @ts-ignore
-import deno from "@deno/astro-adapter";
-import elm from "astro-integration-elm";
+
 // @ts-ignore
 import lighthouse from "astro-lighthouse";
 import tunnel from "astro-tunnel";
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
+import netlify from '@astrojs/netlify';
 
 // https://astro.build/config
 export default defineConfig({
-	integrations: [elm(), react(), tunnel(), lighthouse()],
+	integrations: [ react(), tunnel(), lighthouse()],
 	output: "server",
-	adapter: deno(),
+	adapter: netlify(),
+	env: {
+		schema: {
+		  API_URL: envField.string({ context: "client", access: "public", optional: true }),
+		  PORT: envField.number({ context: "server", access: "public", default: 4321 }),
+		  API_SECRET: envField.string({ context: "server", access: "secret" }),
+		}
+	  },
+	experimental: {
+		session: {
+	        driver: "netlify-blobs",
+        options: {
+          name: 'astro-sessions'
+        }
+		},
+	  },
 	i18n: {
 		defaultLocale: "en",
 		locales: ["en", "pl"],
