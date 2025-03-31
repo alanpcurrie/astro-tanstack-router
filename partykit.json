@@ -1,0 +1,7 @@
+{
+  "name": "flowchart-collaboration",
+  "main": "src/party/server.ts",
+  "parties": {
+    "flowchart": "src/party/server.ts"
+  }
+}

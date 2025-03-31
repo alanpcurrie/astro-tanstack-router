@@ -20,12 +20,7 @@ export default defineConfig({
 		}
 	  },
 	experimental: {
-		session: {
-	        driver: "netlify-blobs",
-        options: {
-          name: 'astro-sessions'
-        }
-		},
+		session: true,
 	  },
 	i18n: {
 		defaultLocale: "en",

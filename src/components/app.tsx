@@ -14,12 +14,12 @@ import {
 	createRoute,
 	createRouter,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import Monty from "~components/Monty";
 import System from "~components/System";
 import FlowState from "~components/FlowState";
 import SystemFlow from "~components/SystemFlow";
 import MermaidFlow from "~components/MermaidFlow";
+import ExperimentalFlow from "~components/ExperimentalFlow";
 
 const cazoo: BrandVariants = { 
 	10: "#060201",
@@ -40,13 +40,13 @@ const cazoo: BrandVariants = {
 	160: "#FCCCBF"
 };
 
-const lightTheme: Theme = {
-	...createLightTheme(cazoo), 
-};
+// const lightTheme: Theme = {
+// 	...createLightTheme(cazoo), 
+// };
 
-const darkTheme: Theme = {
-	...createDarkTheme(cazoo), 
-};
+// const darkTheme: Theme = {
+// 	...createDarkTheme(cazoo), 
+// };
 
 const COLOR_PINK = "#ff0090";
 const COLOR_CYAN = "#00e5ff";
@@ -210,6 +210,18 @@ const Layout = () => (
 				</li>
 				<li style={{ margin: "0 10px" }}>
 					<Link
+						to="/experimental-flow"
+						style={{
+							color: COLOR_YELLOW,
+							textDecoration: "none",
+							fontSize: "16px",
+						}}
+					>
+						Experimental Flow
+					</Link>
+				</li>
+				<li style={{ margin: "0 10px" }}>
+					<Link
 						to="/mermaid-flow"
 						style={{
 							color: COLOR_YELLOW,
@@ -232,7 +244,6 @@ const Layout = () => (
 		>
 			<Outlet />
 		</div>
-		<TanStackRouterDevtools />
 	</div>
 );
 
@@ -282,6 +293,12 @@ const flowRoute = createRoute({
 	component: FlowState,
 });
 
+const experimentalFlowRoute = createRoute({
+	getParentRoute: () => rootRoute,
+	path: "/experimental-flow",
+	component: ExperimentalFlow,
+});
+
 const mermaidFlowRoute = createRoute({
 	getParentRoute: () => rootRoute,
 	path: "/mermaid-flow",
@@ -296,6 +313,7 @@ const routeTree = rootRoute.addChildren([
 	systemRoute,
 	systemFlowRoute,
 	flowRoute,
+	experimentalFlowRoute,
 	mermaidFlowRoute,
 ]);
 

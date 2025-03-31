@@ -1,10 +1,50 @@
 flowchart TD
-    A[Frontend Service]{"status": "online", "description": "React Application"}
-    B[API Gateway]{"status": "online", "description": "API Gateway Service"}
-    C[Auth Service]{"status": "warning", "description": "Authentication Service"}
-    D[Database]{"status": "online", "description": "PostgreSQL Database"}
+    %% Management Groups
+    Root[Root Management Group]
+    %%| {"status": "warning", "description": "Top-level management group for all Azure resources"}
+    Platform[Platform Management Group]
+    %%| {"status": "online", "description": "Contains all platform-level subscriptions"}
+    LandingZones[Landing Zones Management Group]
+    %%| {"status": "online", "description": "Contains all application workload subscriptions"}
+    Sandbox[Sandbox Management Group]
+    %%| {"status": "offline", "description": "Development and testing environment"}
+
+    %% Platform Subscriptions
+    Management[Management Subscription]
+    %%| {"status": "online", "description": "Core management services and monitoring"}
+    Identity[Identity Subscription]
+    %%| {"status": "warning", "description": "Identity and access management services"}
+    Connectivity[Connectivity Subscription]
+    %%| {"status": "online", "description": "Network connectivity and security services"}
+
+    %% Landing Zone Subscriptions
+    Prod[Production Workloads]
+    %%| {"status": "online", "description": "Production application environments"}
+    NonProd[Non-Production Workloads]
+    %%| {"status": "online", "description": "Staging and UAT environments"}
     
-    A -->|HTTP/REST| B
-    B -->|gRPC| C
-    C -->|TCP| D
-    B -->|TCP| D
+    %% Workload Examples
+    AppGw[Application Gateway]
+    %%| {"status": "online", "description": "Load balancer and WAF for applications"}
+    AKS[AKS Cluster]
+    %%| {"status": "warning", "description": "Kubernetes cluster for container workloads"}
+
+    %% Relationships - Management Groups
+    Root --> Platform
+    Root --> LandingZones
+    Root --> Sandbox
+
+    %% Relationships - Platform Subscriptions
+    Platform --> Management
+    Platform --> Identity
+    Platform --> Connectivity
+
+    %% Relationships - Landing Zone Subscriptions
+    LandingZones --> Prod
+    LandingZones --> NonProd
+    
+    %% Workload Relationships
+    Prod --> AppGw
+    AppGw --> AKS
+
+  

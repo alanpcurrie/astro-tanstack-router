@@ -9,13 +9,13 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
 } from "@xyflow/react";
-import {
-  type Node,
-  type Edge,
-  type NodeChange,
-  type EdgeChange,
-  type Connection,
-  type NodeMouseHandler
+import type {
+  Node,
+  Edge,
+  NodeChange,
+  EdgeChange,
+  Connection,
+  NodeMouseHandler
 } from "@xyflow/react";
 import { useState, useCallback } from "react";
 import { makeStyles, tokens, Text, Card, Tooltip } from "@fluentui/react-components";

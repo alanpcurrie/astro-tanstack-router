@@ -4,6 +4,9 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "baseUrl": ".",
+    "types": [
+      "vitest/importMeta"
+    ],
     "paths": {
       "~/*": ["src/*"],
       "~components/*": ["src/components/*"],

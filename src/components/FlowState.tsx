@@ -14,12 +14,21 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
 } from "@xyflow/react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { createStore } from '@xstate/store';
 import { useSelector } from '@xstate/store/react';
-import { makeStyles, tokens, Text, Card, Tooltip } from "@fluentui/react-components";
+import { makeStyles, tokens, Text, Card, Tooltip, Button, Badge } from "@fluentui/react-components";
+import PartySocket from "partysocket";
 
 import "@xyflow/react/dist/style.css";
+
+if (import.meta.vitest) {
+  const { it, expect } = import.meta.vitest;
+  it('IN SOURCE TEST', () => {
+    const result = true;
+    expect(result).toEqual(true);
+  });
+}
 
 const initialNodes: Array<CustomNodeData> = [
   {
@@ -146,6 +155,26 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalS,
   },
+  partyContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalM,
+    padding: tokens.spacingVerticalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  messageContainer: {
+    marginTop: tokens.spacingVerticalM,
+    padding: tokens.spacingVerticalS,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusSmall,
+    maxHeight: '100px',
+    overflowY: 'auto',
+  },
+  connectionStatus: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+  }
 });
 
 type Data = {
@@ -161,6 +190,12 @@ type FlowState = Readonly<{
   edges: Array<Edge>;
   selectedNode: CustomNodeData | null;
 }>
+
+type PartyMessage = {
+  id: string;
+  content: string;
+  timestamp: number;
+}
 
 const updateNodes = (changes: Array<NodeChange>) => (nodes: Array<Node>): Array<Node> =>
   applyNodeChanges(changes, nodes);
@@ -252,6 +287,113 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
+// PartyKit connection component
+const PartyConnection = () => {
+  const styles = useStyles();
+  const [socket, setSocket] = useState<PartySocket | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [messages, setMessages] = useState<PartyMessage[]>([]);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    // Create a connection to the PartyKit server
+    const partySocket = new PartySocket({
+      host: "127.0.0.1:1999", // Direct IP and port for local development
+      room: "flowchart", // Must match the party name in partykit.json
+    });
+
+    partySocket.addEventListener('open', () => {
+      console.log('Connected to PartyKit server');
+      setConnected(true);
+      // Send a hello message
+      partySocket.send(JSON.stringify({ 
+        type: 'hello', 
+        data: { message: 'Hello from FlowState!' } 
+      }));
+    });
+
+    partySocket.addEventListener('message', (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Received message:', data);
+        if (data.type === 'hello') {
+          setMessages(prev => [...prev, {
+            id: crypto.randomUUID(),
+            content: `Received: ${data.data.message}`,
+            timestamp: Date.now()
+          }]);
+        }
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
+    });
+
+    partySocket.addEventListener('close', () => {
+      console.log('Disconnected from PartyKit server');
+      setConnected(false);
+    });
+
+    partySocket.addEventListener('error', (error) => {
+      console.error('PartyKit connection error:', error);
+      setConnected(false);
+    });
+
+    setSocket(partySocket);
+
+    return () => {
+      partySocket.close();
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (socket && message) {
+      socket.send(JSON.stringify({ 
+        type: 'hello', 
+        data: { message } 
+      }));
+      setMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        content: `Sent: ${message}`,
+        timestamp: Date.now()
+      }]);
+      setMessage('');
+    }
+  };
+
+  return (
+    <div>
+      <div className={styles.partyContainer}>
+        <div className={styles.connectionStatus}>
+          <Badge 
+            appearance="filled" 
+            color={connected ? "success" : "danger"}
+          >
+            {connected ? "Connected" : "Disconnected"}
+          </Badge>
+        </div>
+        <input 
+          type="text" 
+          value={message} 
+          onChange={(e) => setMessage(e.target.value)} 
+          placeholder="Type a message..."
+          disabled={!connected}
+        />
+        <Button 
+          onClick={sendMessage} 
+          disabled={!connected || !message}
+        >
+          Send
+        </Button>
+      </div>
+      <div className={styles.messageContainer}>
+        {messages.map((msg) => (
+          <div key={msg.id}>{msg.content}</div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Flow = () => {
   const styles = useStyles();
   const nodesState = useSelector(flowStore, state => state.context.nodes);
@@ -279,6 +421,7 @@ const Flow = () => {
   return (
     <Card>
       <Text weight="semibold" size={500}>Systems Diagram</Text>
+      <PartyConnection />
       <div className={styles.flowContainer}>
         {selectedNode && <NodeDetailsCard node={selectedNode} />}
         <ReactFlow
