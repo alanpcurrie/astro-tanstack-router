@@ -35,8 +35,22 @@ const useStyles = makeStyles({
   },
   // Container node styles
   containerNode: {
-    border: `1px solid ${tokens.colorNeutralStrokeAccessible}`,
+    border: `2px dashed ${tokens.colorBrandStroke1}`,
     backgroundColor: tokens.colorPaletteBlueBackground2,
+    padding: '20px',
+    width: '300px',
+    height: '300px',
+    borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  containerHeader: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '10px',
   },
   containerIcon: {
     width: '40px',
@@ -150,37 +164,39 @@ export const PersonNode = ({ data }: { data: { label: string; description?: stri
   );
 };
 
-// Container node component
+// Container node component - designed as a group node
 export const ContainerNode = ({ data }: { data: { label: string; description?: string; technology?: string } }) => {
   const styles = useStyles();
   
   return (
-    <div className={`${styles.c4NodeBase} ${styles.containerNode}`}>
+    <div className={styles.containerNode}>
+      <div className={styles.containerHeader}>
+        <div className={styles.containerIcon}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="containerIconTitle">
+            <title id="containerIconTitle">Container Icon</title>
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+            <rect x="7" y="9" width="10" height="6" rx="1" stroke="white" strokeWidth="2" fill="none"/>
+          </svg>
+        </div>
+        
+        <Text className={styles.nodeLabel}>{data.label}</Text>
+        
+        {(data.technology || data.description) && <div className={styles.dottedLine} />}
+        
+        {data.technology && (
+          <Text className={styles.technology}>[{data.technology}]</Text>
+        )}
+        
+        {data.description && (
+          <Text className={styles.nodeDescription}>{data.description}</Text>
+        )}
+      </div>
+      
       <Handle 
         type="target" 
         position={Position.Top} 
         className={styles.handle}
       />
-      
-      <div className={styles.containerIcon}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="containerIconTitle">
-          <title id="containerIconTitle">Container Icon</title>
-          <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2" fill="none"/>
-          <rect x="7" y="9" width="10" height="6" rx="1" stroke="white" strokeWidth="2" fill="none"/>
-        </svg>
-      </div>
-      
-      <Text className={styles.nodeLabel}>{data.label}</Text>
-      
-      {(data.technology || data.description) && <div className={styles.dottedLine} />}
-      
-      {data.technology && (
-        <Text className={styles.technology}>[{data.technology}]</Text>
-      )}
-      
-      {data.description && (
-        <Text className={styles.nodeDescription}>{data.description}</Text>
-      )}
       
       <Handle 
         type="source" 

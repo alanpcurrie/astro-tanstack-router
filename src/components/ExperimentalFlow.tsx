@@ -15,6 +15,7 @@ import {
   applyEdgeChanges,
   Panel,
   ReactFlowProvider,
+  useReactFlow,
 } from "@xyflow/react";
 import { memo, useCallback, useEffect, useState } from "react";
 import { makeStyles, tokens, Text, Card, Tooltip, Button, Badge, Spinner, Input } from "@fluentui/react-components";
@@ -113,6 +114,16 @@ const useStyles = makeStyles({
     display: "flex",
     gap: "8px",
   },
+  nodeControls: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    backgroundColor: tokens.colorNeutralBackground1,
+    padding: "10px",
+    borderRadius: "4px",
+    boxShadow: tokens.shadow4,
+    zIndex: 1000,
+  },
 } as const);
 
 // Custom node component
@@ -190,6 +201,8 @@ function FlowContent() {
   const [lastUpdate, setLastUpdate] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const reactFlowInstance = useReactFlow();
 
   // Define custom message handler
   const handleCustomMessage: MessageHandler = useCallback((message) => {
@@ -302,15 +315,17 @@ function FlowContent() {
   }, [nodes.length, collaboration]);
 
   // Add a new person node
-  const addPersonNode = useCallback(() => {
+  const addPersonNode = useCallback((parentId?: string) => {
     const newNodeId = uuidv4();
     const newNode: Node = {
       id: newNodeId,
       type: 'person',
       position: {
-        x: Math.random() * 500,
-        y: Math.random() * 300,
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
       },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
       data: { 
         label: `Person ${nodes.length + 1}`,
         role: 'User',
@@ -330,14 +345,20 @@ function FlowContent() {
   }, [nodes.length, collaboration]);
 
   // Add a new container node
-  const addContainerNode = useCallback(() => {
+  const addContainerNode = useCallback((parentId?: string) => {
     const newNodeId = uuidv4();
     const newNode: Node = {
       id: newNodeId,
       type: 'container',
       position: {
-        x: Math.random() * 500,
-        y: Math.random() * 300,
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      style: {
+        width: 300,
+        height: 300,
       },
       data: { 
         label: `Container ${nodes.length + 1}`,
@@ -358,15 +379,17 @@ function FlowContent() {
   }, [nodes.length, collaboration]);
 
   // Add a new component node
-  const addComponentNode = useCallback(() => {
+  const addComponentNode = useCallback((parentId?: string) => {
     const newNodeId = uuidv4();
     const newNode: Node = {
       id: newNodeId,
       type: 'component',
       position: {
-        x: Math.random() * 500,
-        y: Math.random() * 300,
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
       },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
       data: { 
         label: `Component ${nodes.length + 1}`,
         technology: 'React',
@@ -386,15 +409,17 @@ function FlowContent() {
   }, [nodes.length, collaboration]);
 
   // Add a new system node
-  const addSystemNode = useCallback(() => {
+  const addSystemNode = useCallback((parentId?: string) => {
     const newNodeId = uuidv4();
     const newNode: Node = {
       id: newNodeId,
       type: 'system',
       position: {
-        x: Math.random() * 500,
-        y: Math.random() * 300,
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
       },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
       data: { 
         label: `System ${nodes.length + 1}`,
         external: Math.random() > 0.5, // Randomly set as external or internal
@@ -422,10 +447,30 @@ function FlowContent() {
     
     // Delete nodes
     if (selectedNodes.length > 0) {
+      // Also delete any child nodes
+      const nodesToDelete = new Set<string>();
+      
+      // First collect all selected nodes
       for (const node of selectedNodes) {
-        collaboration.broadcastNodeDelete(node.id);
+        nodesToDelete.add(node.id);
       }
-      setNodes((nds) => nds.filter((node) => !node.selected));
+      
+      // Then collect all child nodes of selected container nodes
+      for (const node of selectedNodes) {
+        if (node.type === 'container') {
+          const childNodes = nodes.filter(n => n.parentId === node.id);
+          for (const child of childNodes) {
+            nodesToDelete.add(child.id);
+          }
+        }
+      }
+      
+      // Delete all collected nodes
+      for (const nodeId of nodesToDelete) {
+        collaboration.broadcastNodeDelete(nodeId);
+      }
+      
+      setNodes((nds) => nds.filter((node) => !nodesToDelete.has(node.id)));
     }
     
     // Delete edges
@@ -458,14 +503,24 @@ function FlowContent() {
     setMessageInput('');
   }, [messageInput, connected, collaboration]);
 
+  // Handle node selection
+  const onSelectionChange = useCallback(({ nodes: selectedNodes }: { nodes: Node[] }) => {
+    if (selectedNodes.length === 1) {
+      const node = selectedNodes[0];
+      setSelectedNode(node || null);
+    } else {
+      setSelectedNode(null);
+    }
+  }, []);
+
   return (
     <div className={styles.root}>
       <div className={styles.controls}>
         <Button appearance="primary" onClick={addNode} disabled={!initialized}>Add Node</Button>
-        <Button appearance="primary" onClick={addPersonNode} disabled={!initialized}>Add Person</Button>
-        <Button appearance="primary" onClick={addContainerNode} disabled={!initialized}>Add Container</Button>
-        <Button appearance="primary" onClick={addComponentNode} disabled={!initialized}>Add Component</Button>
-        <Button appearance="primary" onClick={addSystemNode} disabled={!initialized}>Add System</Button>
+        <Button appearance="primary" onClick={() => addPersonNode()} disabled={!initialized}>Add Person</Button>
+        <Button appearance="primary" onClick={() => addContainerNode()} disabled={!initialized}>Add Container</Button>
+        <Button appearance="primary" onClick={() => addComponentNode()} disabled={!initialized}>Add Component</Button>
+        <Button appearance="primary" onClick={() => addSystemNode()} disabled={!initialized}>Add System</Button>
         <Button appearance="outline" onClick={deleteSelected} disabled={!initialized}>Delete Selected</Button>
       </div>
       
@@ -486,12 +541,25 @@ function FlowContent() {
           onEdgesChange={collaboration.onEdgesChange}
           onConnect={onConnect}
           onNodeDragStop={onNodeDragStop}
+          onSelectionChange={onSelectionChange}
           nodeTypes={nodeTypes}
           fitView
         >
           <Background />
           <Controls />
           <MiniMap />
+          
+          {selectedNode && selectedNode.type === 'container' && (
+            <Panel position="top-left" className={styles.nodeControls}>
+              <Text weight="semibold">Add to Container: {(selectedNode.data as { label: string }).label}</Text>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <Button size="small" onClick={() => addPersonNode(selectedNode.id)}>Add Person</Button>
+                <Button size="small" onClick={() => addComponentNode(selectedNode.id)}>Add Component</Button>
+                <Button size="small" onClick={() => addSystemNode(selectedNode.id)}>Add System</Button>
+                <Button size="small" onClick={() => addContainerNode(selectedNode.id)}>Add Container</Button>
+              </div>
+            </Panel>
+          )}
           
           <Panel position="top-right" className={styles.statusPanel}>
             <div className={styles.collaborationStatus}>
