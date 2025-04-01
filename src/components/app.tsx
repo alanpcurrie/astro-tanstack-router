@@ -21,32 +21,7 @@ import SystemFlow from "~components/SystemFlow";
 import MermaidFlow from "~components/MermaidFlow";
 import ExperimentalFlow from "~components/ExperimentalFlow";
 
-const cazoo: BrandVariants = { 
-	10: "#060201",
-	20: "#24120B",
-	30: "#3E1A13",
-	40: "#532117",
-	50: "#69271B",
-	60: "#802D1F",
-	70: "#983323",
-	80: "#B03827",
-	90: "#C93E2B",
-	100: "#DA4E37",
-	110: "#E2654C",
-	120: "#E97A62",
-	130: "#EF8F79",
-	140: "#F5A390",
-	150: "#F9B8A7",
-	160: "#FCCCBF"
-};
 
-// const lightTheme: Theme = {
-// 	...createLightTheme(cazoo), 
-// };
-
-// const darkTheme: Theme = {
-// 	...createDarkTheme(cazoo), 
-// };
 
 const COLOR_PINK = "#ff0090";
 const COLOR_CYAN = "#00e5ff";

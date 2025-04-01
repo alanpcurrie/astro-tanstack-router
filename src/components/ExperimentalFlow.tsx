@@ -34,44 +34,44 @@ const useStyles = makeStyles({
     flexDirection: "column",
   },
   controls: {
-    padding: "8px",
+    padding: tokens.spacingHorizontalM,
     borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     display: "flex",
-    gap: "8px",
+    gap: tokens.spacingHorizontalM,
   },
   flowContainer: {
     flex: 1,
     position: "relative",
   },
   customNode: {
-    padding: "10px",
-    borderRadius: "3px",
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
     width: "150px",
     fontSize: "12px",
     color: tokens.colorNeutralForeground1,
     textAlign: "center",
-    border: `1px solid ${tokens.colorBrandStroke1}`,
-    backgroundColor: tokens.colorBrandBackground,
+    border: `1px solid ${tokens.colorBrandBackground}`,
+    backgroundColor: tokens.colorNeutralBackground1,
   },
   statusPanel: {
     backgroundColor: tokens.colorNeutralBackground1,
-    padding: "10px",
-    borderRadius: "4px",
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow4,
   },
   collaborationStatus: {
-    marginBottom: "10px",
+    marginBottom: tokens.spacingVerticalM,
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: tokens.spacingHorizontalM,
   },
   userIndicator: {
     display: "inline-block",
     width: "8px",
     height: "8px",
     borderRadius: "50%",
-    backgroundColor: tokens.colorPaletteGreenForeground1,
-    marginRight: "8px",
+    backgroundColor: tokens.colorBrandForeground1,
+    marginRight: tokens.spacingHorizontalM,
   },
   loadingOverlay: {
     position: "absolute",
@@ -85,26 +85,26 @@ const useStyles = makeStyles({
     alignItems: "center",
     zIndex: 1000,
     flexDirection: "column",
-    gap: "16px",
+    gap: tokens.spacingHorizontalL,
   },
   messagingContainer: {
     position: "absolute",
-    bottom: "20px",
-    left: "20px",
+    bottom: tokens.spacingHorizontalL,
+    left: tokens.spacingHorizontalL,
     width: "300px",
     backgroundColor: tokens.colorNeutralBackground1,
-    padding: "10px",
-    borderRadius: "4px",
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow4,
     zIndex: 1000,
   },
   messageList: {
     maxHeight: "150px",
     overflowY: "auto",
-    marginBottom: "10px",
-    padding: "8px",
+    marginBottom: tokens.spacingVerticalM,
+    padding: tokens.spacingHorizontalM,
     border: `1px solid ${tokens.colorNeutralStroke1}`,
-    borderRadius: "4px",
+    borderRadius: tokens.borderRadiusSmall,
   },
   messageItem: {
     padding: "4px 0",
@@ -112,17 +112,33 @@ const useStyles = makeStyles({
   },
   messageInput: {
     display: "flex",
-    gap: "8px",
+    gap: tokens.spacingHorizontalM,
   },
   nodeControls: {
     position: "absolute",
-    top: "20px",
-    left: "20px",
+    top: tokens.spacingHorizontalL,
+    left: tokens.spacingHorizontalL,
     backgroundColor: tokens.colorNeutralBackground1,
-    padding: "10px",
-    borderRadius: "4px",
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow4,
     zIndex: 1000,
+  },
+  editPanel: {
+    position: "absolute",
+    top: tokens.spacingHorizontalL,
+    right: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorNeutralBackground1,
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow4,
+    zIndex: 1000,
+    width: "250px",
+  },
+  editForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingHorizontalM,
   },
 } as const);
 
@@ -202,6 +218,7 @@ function FlowContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [editedNodeData, setEditedNodeData] = useState<Record<string, string>>({});
   const reactFlowInstance = useReactFlow();
 
   // Define custom message handler
@@ -257,6 +274,9 @@ function FlowContent() {
       // Broadcast edge update
       collaboration.broadcastEdgeUpdate(newEdge);
       setLastUpdate(`Edge created: ${newEdge.id}`);
+      
+      // Return the new edge to satisfy TypeScript
+      return newEdge;
     },
     [collaboration]
   );
@@ -507,10 +527,61 @@ function FlowContent() {
   const onSelectionChange = useCallback(({ nodes: selectedNodes }: { nodes: Node[] }) => {
     if (selectedNodes.length === 1) {
       const node = selectedNodes[0];
-      setSelectedNode(node || null);
+      if (node) {  
+        setSelectedNode(node);
+        // Initialize edit form with current node data
+        const nodeData = node.data as Record<string, string>;
+        setEditedNodeData({
+          label: nodeData.label || '',
+          description: nodeData.description || '',
+          ...(nodeData.role ? { role: nodeData.role } : {}),
+          ...(nodeData.technology ? { technology: nodeData.technology } : {}),
+          ...(nodeData.external !== undefined ? { external: String(nodeData.external) } : {})
+        });
+      } else {
+        setSelectedNode(null);
+        setEditedNodeData({});
+      }
     } else {
       setSelectedNode(null);
+      setEditedNodeData({});
     }
+  }, []);
+
+  // Update node data
+  const updateNodeData = useCallback(() => {
+    if (!selectedNode) return;
+    
+    // Create updated node with new data
+    const updatedNode = {
+      ...selectedNode,
+      data: {
+        ...selectedNode.data,
+        ...editedNodeData,
+        // Convert 'external' string to boolean if it exists
+        ...(editedNodeData.external !== undefined ? { 
+          external: editedNodeData.external === 'true' 
+        } : {})
+      }
+    };
+    
+    // Update node locally
+    setNodes(nds => 
+      nds.map(n => (n.id === selectedNode.id ? updatedNode : n))
+    );
+    
+    // Broadcast node update to other clients
+    collaboration.broadcastNodeUpdate(updatedNode);
+    
+    setLastUpdate(`Updated ${selectedNode.type} node: ${selectedNode.id}`);
+  }, [selectedNode, editedNodeData, collaboration]);
+
+  // Handle input change in edit form
+  const handleEditInputChange = useCallback((field: string, value: string) => {
+    setEditedNodeData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   }, []);
 
   return (
@@ -561,7 +632,86 @@ function FlowContent() {
             </Panel>
           )}
           
-          <Panel position="top-right" className={styles.statusPanel}>
+          {/* Node Edit Panel */}
+          {selectedNode && (
+            <Panel position="top-right" className={styles.editPanel}>
+              <Text weight="semibold">Edit {selectedNode.type} Node</Text>
+              <div className={styles.editForm}>
+                <div>
+                  <Text as="span" size={200} block id="label-input">Label</Text>
+                  <Input 
+                    value={editedNodeData.label || ''}
+                    onChange={(_, data) => handleEditInputChange('label', data.value)}
+                    aria-labelledby="label-input"
+                  />
+                </div>
+                
+                <div>
+                  <Text as="span" size={200} block id="description-input">Description</Text>
+                  <Input 
+                    value={editedNodeData.description || ''}
+                    onChange={(_, data) => handleEditInputChange('description', data.value)}
+                    aria-labelledby="description-input"
+                  />
+                </div>
+                
+                {/* Role field (only for person nodes) */}
+                {selectedNode.type === 'person' && (
+                  <div>
+                    <Text as="span" size={200} block id="role-input">Role</Text>
+                    <Input 
+                      value={editedNodeData.role || ''}
+                      onChange={(_, data) => handleEditInputChange('role', data.value)}
+                      aria-labelledby="role-input"
+                    />
+                  </div>
+                )}
+                
+                {/* Technology field (for container and component nodes) */}
+                {(selectedNode.type === 'container' || selectedNode.type === 'component') && (
+                  <div>
+                    <Text as="span" size={200} block id="technology-input">Technology</Text>
+                    <Input 
+                      value={editedNodeData.technology || ''}
+                      onChange={(_, data) => handleEditInputChange('technology', data.value)}
+                      aria-labelledby="technology-input"
+                    />
+                  </div>
+                )}
+                
+                {/* External checkbox (only for system nodes) */}
+                {selectedNode.type === 'system' && (
+                  <div>
+                    <Text as="span" size={200} block id="external-input">External System</Text>
+                    <select 
+                      value={editedNodeData.external || 'false'}
+                      onChange={e => handleEditInputChange('external', e.target.value)}
+                      aria-labelledby="external-input"
+                      style={{ 
+                        width: '100%', 
+                        padding: '5px', 
+                        marginTop: '4px',
+                        borderRadius: '4px',
+                        border: `1px solid ${tokens.colorNeutralStroke1}`
+                      }}
+                    >
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  </div>
+                )}
+                
+                <Button 
+                  appearance="primary" 
+                  onClick={updateNodeData}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </Panel>
+          )}
+          
+          <Panel position="top-right" className={styles.statusPanel} style={{ top: selectedNode ? '280px' : '20px' }}>
             <div className={styles.collaborationStatus}>
               <Badge 
                 appearance="filled" 
@@ -620,11 +770,11 @@ function FlowContent() {
             </div>
             <div className={styles.messageInput}>
               <Input 
-                value={messageInput}
-                onChange={(e, data) => setMessageInput(data.value)}
                 placeholder="Type a message..."
+                value={messageInput}
+                onChange={(_, data) => setMessageInput(data.value)}
                 disabled={!connected}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter') {
                     sendMessage();
                   }
