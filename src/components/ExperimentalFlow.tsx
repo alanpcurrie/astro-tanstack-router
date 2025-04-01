@@ -53,26 +53,26 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorBrandBackground}`,
     backgroundColor: tokens.colorNeutralBackground1,
   },
-  statusPanel: {
-    backgroundColor: tokens.colorNeutralBackground1,
-    padding: tokens.spacingVerticalM,
-    borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow4,
-  },
-  collaborationStatus: {
-    marginBottom: tokens.spacingVerticalM,
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalM,
-  },
-  userIndicator: {
-    display: "inline-block",
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    backgroundColor: tokens.colorBrandForeground1,
-    marginRight: tokens.spacingHorizontalM,
-  },
+  // statusPanel: {
+  //   backgroundColor: tokens.colorNeutralBackground1,
+  //   padding: tokens.spacingVerticalM,
+  //   borderRadius: tokens.borderRadiusMedium,
+  //   boxShadow: tokens.shadow4,
+  // },
+  // collaborationStatus: {
+  //   marginBottom: tokens.spacingVerticalM,
+  //   display: "flex",
+  //   alignItems: "center",
+  //   gap: tokens.spacingHorizontalM,
+  // },
+  // userIndicator: {
+  //   display: "inline-block",
+  //   width: "8px",
+  //   height: "8px",
+  //   borderRadius: "50%",
+  //   backgroundColor: tokens.colorBrandForeground1,
+  //   marginRight: tokens.spacingHorizontalM,
+  // },
   loadingOverlay: {
     position: "absolute",
     top: 0,
@@ -87,33 +87,33 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingHorizontalL,
   },
-  messagingContainer: {
-    position: "absolute",
-    bottom: tokens.spacingHorizontalL,
-    left: tokens.spacingHorizontalL,
-    width: "300px",
-    backgroundColor: tokens.colorNeutralBackground1,
-    padding: tokens.spacingVerticalM,
-    borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow4,
-    zIndex: 1000,
-  },
-  messageList: {
-    maxHeight: "150px",
-    overflowY: "auto",
-    marginBottom: tokens.spacingVerticalM,
-    padding: tokens.spacingHorizontalM,
-    border: `1px solid ${tokens.colorNeutralStroke1}`,
-    borderRadius: tokens.borderRadiusSmall,
-  },
-  messageItem: {
-    padding: "4px 0",
-    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
-  },
-  messageInput: {
-    display: "flex",
-    gap: tokens.spacingHorizontalM,
-  },
+  // messagingContainer: {
+  //   position: "absolute",
+  //   bottom: tokens.spacingHorizontalL,
+  //   left: tokens.spacingHorizontalL,
+  //   width: "300px",
+  //   backgroundColor: tokens.colorNeutralBackground1,
+  //   padding: tokens.spacingVerticalM,
+  //   borderRadius: tokens.borderRadiusMedium,
+  //   boxShadow: tokens.shadow4,
+  //   zIndex: 1000,
+  // },
+  // messageList: {
+  //   maxHeight: "150px",
+  //   overflowY: "auto",
+  //   marginBottom: tokens.spacingVerticalM,
+  //   padding: tokens.spacingHorizontalM,
+  //   border: `1px solid ${tokens.colorNeutralStroke1}`,
+  //   borderRadius: tokens.borderRadiusSmall,
+  // },
+  // messageItem: {
+  //   padding: "4px 0",
+  //   borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  // },
+  // messageInput: {
+  //   display: "flex",
+  //   gap: tokens.spacingHorizontalM,
+  // },
   nodeControls: {
     position: "absolute",
     top: tokens.spacingHorizontalL,
@@ -140,6 +140,86 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingHorizontalM,
   },
+  nodeEditForm: {
+    padding: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow16,
+    width: '300px',
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    zIndex: 1000,
+  },
+  formField: {
+    marginBottom: tokens.spacingVerticalM,
+  },
+  buttonGroup: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: tokens.spacingVerticalL,
+  },
+  toolbar: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalM,
+    padding: tokens.spacingVerticalS,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  statusPanel: {
+    padding: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow16,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalM,
+  },
+  collaborationStatus: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalS,
+  },
+  userIndicator: {
+    display: 'inline-block',
+    width: '10px',
+    height: '10px',
+    borderRadius: '50%',
+    backgroundColor: tokens.colorPaletteGreenForeground1,
+    marginRight: tokens.spacingHorizontalXS,
+  },
+  messagingContainer: {
+    padding: tokens.spacingHorizontalL,
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow16,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalM,
+  },
+  messageList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingVerticalS,
+    maxHeight: '200px',
+    overflowY: 'auto',
+    padding: tokens.spacingVerticalS,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusSmall,
+  },
+  messageItem: {
+    padding: tokens.spacingVerticalXS,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+  },
+  messageInput: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalS,
+    marginTop: tokens.spacingVerticalS,
+  },
+  panelButton: {
+    marginTop: tokens.spacingVerticalS,
+    alignSelf: 'flex-end',
+  }
 } as const);
 
 // Custom node component
@@ -219,6 +299,8 @@ function FlowContent() {
   const [messageInput, setMessageInput] = useState("");
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [editedNodeData, setEditedNodeData] = useState<Record<string, string>>({});
+  const [showMessageHistory, setShowMessageHistory] = useState(true);
+  const [showStatusPanel, setShowStatusPanel] = useState(true);
   const reactFlowInstance = useReactFlow();
 
   // Define custom message handler
@@ -634,7 +716,7 @@ function FlowContent() {
           
           {/* Node Edit Panel */}
           {selectedNode && (
-            <Panel position="top-right" className={styles.editPanel}>
+            <Panel position="top-right" className={styles.nodeEditForm}>
               <Text weight="semibold">Edit {selectedNode.type} Node</Text>
               <div className={styles.editForm}>
                 <div>
@@ -711,84 +793,146 @@ function FlowContent() {
             </Panel>
           )}
           
-          <Panel position="top-right" className={styles.statusPanel} style={{ top: selectedNode ? '280px' : '20px' }}>
-            <div className={styles.collaborationStatus}>
-              <Badge 
-                appearance="filled" 
-                color={connected ? "success" : "danger"}
-              >
-                {connected ? "Connected" : "Disconnected"}
-              </Badge>
-              
-              {connected && (
-                <Badge 
-                  appearance="filled" 
-                  color={initialized ? "success" : "warning"}
-                >
-                  {initialized ? "Synchronized" : "Synchronizing..."}
-                </Badge>
-              )}
-            </div>
-            
-            <div>
-              <Text size={200}>Active Users: {activeUsers.length}</Text>
-              <div>
-                {activeUsers.map((user) => (
-                  <div key={user.id}>
-                    <span className={styles.userIndicator} />
-                    {user.name}
+          {showMessageHistory && (
+            <Panel position="bottom-left" className={styles.messagingContainer} style={{ 
+              position: 'absolute', 
+              bottom: tokens.spacingHorizontalL, 
+              left: tokens.spacingHorizontalL,
+              width: '300px',
+              zIndex: 1000
+            }}>
+              <Text weight="semibold">Message History</Text>
+              <div className={styles.messageList}>
+                {messages.map((msg) => (
+                  <div key={msg.id} className={styles.messageItem}>
+                    <Text size={200} weight={msg.type === 'sent' ? 'semibold' : 'regular'}>
+                      {msg.type === 'sent' ? 'Sent: ' : ''}{msg.content}
+                    </Text>
                   </div>
                 ))}
-                {activeUsers.length === 0 && (
-                  <Text size={200} italic>No active users</Text>
+                {messages.length === 0 && (
+                  <Text size={200} italic>No messages yet</Text>
                 )}
               </div>
-            </div>
-            
-            {lastUpdate && (
-              <div style={{ marginTop: "10px" }}>
-                <Text size={200}>Last update:</Text>
-                <div>{lastUpdate}</div>
+              <div className={styles.messageInput}>
+                <Input 
+                  placeholder="Type a message..."
+                  value={messageInput}
+                  onChange={(_, data) => setMessageInput(data.value)}
+                  disabled={!connected}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      sendMessage();
+                    }
+                  }}
+                  style={{ width: '200px' }}
+                />
+                <Button 
+                  appearance="primary"
+                  onClick={sendMessage}
+                  disabled={!connected || !messageInput.trim()}
+                >
+                  Send
+                </Button>
               </div>
-            )}
-          </Panel>
-
-          {/* Messaging Panel */}
-          <Panel position="bottom-left" className={styles.messagingContainer}>
-            <Text weight="semibold">Systems Diagram</Text>
-            <div className={styles.messageList}>
-              {messages.map((msg) => (
-                <div key={msg.id} className={styles.messageItem}>
-                  <Text size={200} weight={msg.type === 'sent' ? 'semibold' : 'regular'}>
-                    {msg.type === 'sent' ? 'Sent: ' : ''}{msg.content}
-                  </Text>
-                </div>
-              ))}
-              {messages.length === 0 && (
-                <Text size={200} italic>No messages yet</Text>
-              )}
-            </div>
-            <div className={styles.messageInput}>
-              <Input 
-                placeholder="Type a message..."
-                value={messageInput}
-                onChange={(_, data) => setMessageInput(data.value)}
-                disabled={!connected}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') {
-                    sendMessage();
-                  }
-                }}
-              />
               <Button 
-                appearance="primary"
-                onClick={sendMessage}
-                disabled={!connected || !messageInput.trim()}
+                appearance="primary" 
+                onClick={() => setShowMessageHistory(false)}
+                className={styles.panelButton}
               >
-                Send
+                Collapse
               </Button>
-            </div>
-          </Panel>
+            </Panel>
+          )}
+          {!showMessageHistory && (
+            <Button 
+              appearance="primary" 
+              onClick={() => setShowMessageHistory(true)}
+              style={{ 
+                position: 'absolute', 
+                bottom: tokens.spacingHorizontalL, 
+                left: tokens.spacingHorizontalL,
+                zIndex: 1000
+              }}
+            >
+              Show Messages
+            </Button>
+          )}
+          
+          {showStatusPanel && (
+            <Panel position="bottom-left" className={styles.statusPanel} style={{ 
+              position: 'absolute', 
+              bottom: tokens.spacingHorizontalL, 
+              left: `calc(${tokens.spacingHorizontalL} + 350px)`,
+              width: '250px',
+              zIndex: 1000
+            }}>
+              <Button 
+                appearance="primary" 
+                onClick={() => setShowStatusPanel(false)}
+                style={{ 
+                  position: 'absolute', 
+                  top: '10px', 
+                  right: '10px'
+                }}
+              >
+                Collapse
+              </Button>
+              <div className={styles.collaborationStatus}>
+                <Badge 
+                  appearance="filled" 
+                  color={connected ? "success" : "danger"}
+                >
+                  {connected ? "Connected" : "Disconnected"}
+                </Badge>
+                
+                {connected && (
+                  <Badge 
+                    appearance="filled" 
+                    color={initialized ? "success" : "warning"}
+                  >
+                    {initialized ? "Synchronized" : "Synchronizing..."}
+                  </Badge>
+                )}
+              </div>
+              
+              <div>
+                <Text size={200}>Active Users: {activeUsers.length}</Text>
+                <div>
+                  {activeUsers.map((user) => (
+                    <div key={user.id}>
+                      <span className={styles.userIndicator} />
+                      {user.name}
+                    </div>
+                  ))}
+                  {activeUsers.length === 0 && (
+                    <Text size={200} italic>No active users</Text>
+                  )}
+                </div>
+              </div>
+              
+              {lastUpdate && (
+                <div style={{ marginTop: "10px" }}>
+                  <Text size={200}>Last update:</Text>
+                  <div>{lastUpdate}</div>
+                </div>
+              )}
+            </Panel>
+          )}
+          {!showStatusPanel && (
+            <Button 
+              appearance="primary" 
+              onClick={() => setShowStatusPanel(true)}
+              style={{ 
+                position: 'absolute', 
+                bottom: tokens.spacingHorizontalL, 
+                left: `calc(${tokens.spacingHorizontalL} + 350px)`,
+                zIndex: 1000
+              }}
+            >
+              Expand Status Panel
+            </Button>
+          )}
         </ReactFlow>
       </div>
     </div>

@@ -48,30 +48,52 @@ const SPACING_HORIZONTAL_M = "16px";
 const SPACING_VERTICAL_M = "12px";
 const SPACING_HORIZONTAL_L = "24px";
 
+// C4 diagram specific sizes
+const C4_ICON_SIZE = "40px";
+const C4_NODE_WIDTH = "160px";
+const C4_NODE_PADDING = "12px";
+const C4_CONTAINER_WIDTH = "300px";
+const C4_CONTAINER_HEIGHT = "300px";
+const C4_LABEL_FONT_SIZE = "13px";
+const C4_DESCRIPTION_FONT_SIZE = "11px";
+const C4_HANDLE_SIZE = "6px";
+
+// Export C4 tokens for use in C4Nodes.tsx
+export const c4Tokens = {
+  iconSize: C4_ICON_SIZE,
+  nodeWidth: C4_NODE_WIDTH,
+  nodePadding: C4_NODE_PADDING,
+  containerWidth: C4_CONTAINER_WIDTH,
+  containerHeight: C4_CONTAINER_HEIGHT,
+  labelFontSize: C4_LABEL_FONT_SIZE,
+  descriptionFontSize: C4_DESCRIPTION_FONT_SIZE,
+  handleSize: C4_HANDLE_SIZE,
+};
+
 const cyberpunkTheme: Theme = {
-	...webLightTheme,
-	colorBrandBackground: COLOR_PINK,
-	colorBrandBackgroundHover: COLOR_CYAN,
-	colorNeutralBackground1: COLOR_DARK_BG,
-	colorNeutralForeground1: COLOR_LIGHT_TEXT,
-	colorBrandForeground1: COLOR_MINT,
-	colorNeutralStroke1: COLOR_PURPLE,
-	colorBrandBackgroundPressed: COLOR_ORANGE,
-	colorNeutralForeground2: COLOR_YELLOW,
+  ...webLightTheme,
+  colorBrandBackground: COLOR_PINK,
+  colorBrandBackgroundHover: COLOR_CYAN,
+  colorNeutralBackground1: COLOR_DARK_BG,
+  colorNeutralForeground1: COLOR_LIGHT_TEXT,
+  colorBrandForeground1: COLOR_MINT,
+  colorNeutralStroke1: COLOR_PURPLE,
+  colorBrandBackgroundPressed: COLOR_ORANGE,
+  colorNeutralForeground2: COLOR_YELLOW,
 
-	fontFamilyBase: FONT_FAMILY_COURIER,
-	fontFamilyMonospace: FONT_FAMILY_COURIER,
-	fontWeightBold: 700,
+  fontFamilyBase: FONT_FAMILY_COURIER,
+  fontFamilyMonospace: FONT_FAMILY_COURIER,
+  fontWeightBold: 700,
 
-	borderRadiusMedium: BORDER_RADIUS_MEDIUM,
-	borderRadiusSmall: BORDER_RADIUS_SMALL,
+  borderRadiusMedium: BORDER_RADIUS_MEDIUM,
+  borderRadiusSmall: BORDER_RADIUS_SMALL,
 
-	shadow2: SHADOW_SMALL,
-	shadow4: SHADOW_LARGE,
+  shadow2: SHADOW_SMALL,
+  shadow4: SHADOW_LARGE,
 
-	spacingHorizontalM: SPACING_HORIZONTAL_M,
-	spacingVerticalM: SPACING_VERTICAL_M,
-	spacingHorizontalL: SPACING_HORIZONTAL_L,
+  spacingHorizontalM: SPACING_HORIZONTAL_M,
+  spacingVerticalM: SPACING_VERTICAL_M,
+  spacingHorizontalL: SPACING_HORIZONTAL_L,
 };
 
 const Index = () => (

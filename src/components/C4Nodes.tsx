@@ -1,13 +1,14 @@
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, NodeResizer } from '@xyflow/react';
 import { makeStyles, tokens, Text } from '@fluentui/react-components';
+import { c4Tokens } from './App';
 
 // Styles for C4 nodes
 const useStyles = makeStyles({
   c4NodeBase: {
-    padding: '12px',
+    padding: c4Tokens.nodePadding,
     borderRadius: tokens.borderRadiusMedium,
-    width: '160px',
-    fontSize: '12px',
+    width: c4Tokens.nodeWidth,
+    fontSize: c4Tokens.descriptionFontSize,
     color: tokens.colorNeutralForegroundInverted,
     textAlign: 'center',
     border: `1px solid ${tokens.colorBrandBackground}`,
@@ -24,8 +25,8 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackgroundInverted,
   },
   personIcon: {
-    width: '40px',
-    height: '40px',
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
     borderRadius: '50%',
     backgroundColor: tokens.colorBrandBackground,
     marginBottom: tokens.spacingVerticalM,
@@ -38,12 +39,15 @@ const useStyles = makeStyles({
     border: `2px dashed ${tokens.colorBrandBackground}`,
     backgroundColor: tokens.colorNeutralBackgroundInverted,
     padding: tokens.spacingVerticalM,
-    width: '300px',
-    height: '300px',
+    minWidth: c4Tokens.containerWidth,
+    minHeight: c4Tokens.containerHeight,
+    width: '100%',
+    height: '100%',
     borderRadius: tokens.borderRadiusMedium,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    position: 'relative',
   },
   containerHeader: {
     width: '100%',
@@ -53,8 +57,8 @@ const useStyles = makeStyles({
     marginBottom: tokens.spacingVerticalM,
   },
   containerIcon: {
-    width: '40px',
-    height: '40px',
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
     borderRadius: tokens.borderRadiusSmall,
     backgroundColor: tokens.colorBrandBackground,
     marginBottom: tokens.spacingVerticalM,
@@ -68,8 +72,8 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackgroundInverted,
   },
   componentIcon: {
-    width: '40px',
-    height: '40px',
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
     borderRadius: tokens.borderRadiusSmall,
     backgroundColor: tokens.colorBrandForeground1,
     marginBottom: tokens.spacingVerticalM,
@@ -82,9 +86,17 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     backgroundColor: tokens.colorNeutralBackgroundInverted,
   },
+  externalSystemNode: {
+    border: `2px solid ${tokens.colorPaletteRedBorder2}`,
+    backgroundColor: tokens.colorNeutralBackgroundInverted,
+  },
+  internalSystemNode: {
+    border: `2px solid ${tokens.colorPaletteBlueBackground2}`,
+    backgroundColor: tokens.colorNeutralBackgroundInverted,
+  },
   systemIcon: {
-    width: '40px',
-    height: '40px',
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
     borderRadius: tokens.borderRadiusSmall,
     backgroundColor: tokens.colorNeutralStroke1,
     marginBottom: tokens.spacingVerticalM,
@@ -92,35 +104,52 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  externalSystemIcon: {
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
+    borderRadius: tokens.borderRadiusSmall,
+    backgroundColor: tokens.colorPaletteRedBackground2,
+    marginBottom: tokens.spacingVerticalM,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  internalSystemIcon: {
+    width: c4Tokens.iconSize,
+    height: c4Tokens.iconSize,
+    borderRadius: tokens.borderRadiusSmall,
+    backgroundColor: tokens.colorPaletteBlueBackground2,
+    marginBottom: tokens.spacingVerticalM,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   // Common styles
   nodeLabel: {
-    fontWeight: '600',
-    fontSize: '13px',
-    marginBottom: tokens.spacingVerticalM,
-    color: tokens.colorNeutralForegroundInverted,
+    fontWeight: 'bold',
+    fontSize: c4Tokens.labelFontSize,
+    marginBottom: '4px',
   },
   nodeDescription: {
-    fontSize: '11px',
-    color: tokens.colorNeutralForegroundInverted,
-    maxWidth: '140px',
+    fontSize: c4Tokens.descriptionFontSize,
     textAlign: 'center',
   },
-  handle: {
-    width: '6px',
-    height: '6px',
-    backgroundColor: tokens.colorNeutralBackgroundInverted,
-    border: `1px solid ${tokens.colorNeutralStrokeAccessible}`,
+  technology: {
+    fontSize: c4Tokens.descriptionFontSize,
+    marginBottom: '4px',
+    color: tokens.colorNeutralForegroundInverted,
   },
   dottedLine: {
-    borderBottom: `1px dashed ${tokens.colorNeutralStrokeAccessible}`,
-    width: '100%',
-    margin: '4px 0',
+    width: '80%',
+    height: '1px',
+    borderTop: `1px dotted ${tokens.colorNeutralForegroundInverted}`,
+    margin: '8px 0',
   },
-  technology: {
-    fontSize: '10px',
-    color: tokens.colorNeutralForeground2,
-    fontStyle: 'italic',
-  }
+  handle: {
+    width: c4Tokens.handleSize,
+    height: c4Tokens.handleSize,
+    backgroundColor: tokens.colorBrandBackground,
+  },
 });
 
 // Person node component
@@ -198,6 +227,13 @@ export const ContainerNode = ({ data }: { data: { label: string; description?: s
         className={styles.handle}
       />
       
+      <NodeResizer 
+        color={tokens.colorBrandBackground}
+        isVisible={true}
+        minWidth={300}
+        minHeight={300}
+      />
+      
       <Handle 
         type="source" 
         position={Position.Bottom} 
@@ -253,14 +289,14 @@ export const SystemNode = ({ data }: { data: { label: string; description?: stri
   const styles = useStyles();
   
   return (
-    <div className={`${styles.c4NodeBase} ${styles.systemNode}`}>
+    <div className={`${styles.c4NodeBase} ${data.external ? styles.externalSystemNode : styles.internalSystemNode}`}>
       <Handle 
         type="target" 
         position={Position.Top} 
         className={styles.handle}
       />
       
-      <div className={styles.systemIcon}>
+      <div className={data.external ? styles.externalSystemIcon : styles.internalSystemIcon}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="systemIconTitle">
           <title id="systemIconTitle">System Icon</title>
           <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" strokeWidth="2" fill="none"/>
@@ -270,10 +306,12 @@ export const SystemNode = ({ data }: { data: { label: string; description?: stri
       
       <Text className={styles.nodeLabel}>{data.label}</Text>
       
-      {(data.external || data.description) && <div className={styles.dottedLine} />}
+      {(data.external !== undefined || data.description) && <div className={styles.dottedLine} />}
       
-      {data.external && (
-        <Text className={styles.technology}>[External System]</Text>
+      {data.external !== undefined && (
+        <Text className={styles.technology}>
+          [System Type: {data.external ? "External" : "Internal"}]
+        </Text>
       )}
       
       {data.description && (
