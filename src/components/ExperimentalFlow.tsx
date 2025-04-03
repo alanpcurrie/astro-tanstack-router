@@ -10,14 +10,16 @@ import {
   Panel,
   ReactFlowProvider,
   type NodeMouseHandler,
+  useReactFlow,
 } from "@xyflow/react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState, useRef } from "react";
 import { makeStyles, tokens, Text, Badge, Spinner, Input, Button } from "@fluentui/react-components";
 import { useFlowCollaboration, type MessageHandler, type ActiveUser } from "../hooks/useFlowCollaboration";
+import { useNodeDoubleClickZoom } from "../hooks/useNodeDoubleClickZoom";
 import { v4 as uuidv4 } from 'uuid';
 import { c4NodeTypes } from './C4Nodes';
 
-import "@xyflow/react/dist/style.css";
+// import "@xyflow/react/dist/style.css";
 
 // Define custom node styles
 const useStyles = makeStyles({
@@ -273,7 +275,8 @@ function FlowContent() {
   const [editedNodeData, setEditedNodeData] = useState<Record<string, string>>({});
   const [showMessageHistory, setShowMessageHistory] = useState(true);
   const [showStatusPanel, setShowStatusPanel] = useState(true);
-  // const reactFlowInstance = useReactFlow();
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const reactFlowInstance = useReactFlow();
 
   // Define custom message handler
   const handleCustomMessage: MessageHandler = useCallback((message) => {
@@ -855,8 +858,39 @@ function FlowContent() {
     setLastUpdate(`Hot Spot added: ${newNode.id}`);
   }, [collaboration, initialized, onNodesChange]);
 
+  // Handle zoom out to fit all nodes
+  const zoomOut = useCallback(() => {
+    reactFlowInstance.fitView({ duration: 800, padding: 0.1 });
+    console.log('Zoomed out to fit all nodes');
+  }, [reactFlowInstance]);
+
+  // Handle double-click on the background to zoom out
+  const onPaneDoubleClick = useCallback(() => {
+    zoomOut();
+  }, [zoomOut]);
+
+  // Handle keyboard shortcut (Escape) to zoom out
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        zoomOut();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [zoomOut]);
+
+  // Use our custom double-click zoom hook
+  const onNodeDoubleClick = useNodeDoubleClickZoom({
+    zoomLevel: 1.85,
+    duration: 600,
+  });
+
   return (
-    <div className={styles.root}>
+    <div className={styles.root} ref={reactFlowWrapper}>
       <div className={styles.controls}>
         <Button appearance="transparent" size="small" onClick={addNode} disabled={!initialized} className={styles.ghostButton}>Add Node</Button>
         
@@ -881,6 +915,12 @@ function FlowContent() {
           <Button appearance="transparent" size="small" onClick={() => addExternalSystemEventNode()} disabled={!initialized} className={styles.ghostButton}>External System</Button>
           <Button appearance="transparent" size="small" onClick={() => addHotSpotNode()} disabled={!initialized} className={styles.ghostButton}>Hot Spot</Button>
         </div>
+
+        {/* Zoom Controls */}
+        <div className={styles.nodeGroup}>
+          <Text size={200} weight="semibold" style={{ marginRight: '8px' }}>View:</Text>
+          <Button appearance="transparent" size="small" onClick={zoomOut} disabled={!initialized} className={styles.ghostButton} title="Fit all nodes (Esc)">Fit All</Button>
+        </div>
         
         <Button appearance="subtle" size="small" onClick={deleteSelected} disabled={!initialized}>Delete Selected</Button>
       </div>
@@ -903,6 +943,8 @@ function FlowContent() {
           onConnect={onConnect}
           onNodeDragStop={onNodeDragStop}
           onSelectionChange={onSelectionChange}
+          onNodeDoubleClick={onNodeDoubleClick}
+          onPaneDoubleClick={onPaneDoubleClick}
           nodeTypes={nodeTypes}
           fitView
         >
