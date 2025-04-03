@@ -1,27 +1,21 @@
 import {
   type Node,
   type Edge,
-  type Connection,
-  type NodeChange,
-  type EdgeChange,
-  type NodeMouseHandler,
   ReactFlow,
   Background,
   Controls,
   MiniMap,
   Position,
   Handle,
-  applyNodeChanges,
-  applyEdgeChanges,
   Panel,
   ReactFlowProvider,
-  useReactFlow,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 import { memo, useCallback, useEffect, useState } from "react";
-import { makeStyles, tokens, Text, Card, Tooltip, Button, Badge, Spinner, Input } from "@fluentui/react-components";
+import { makeStyles, tokens, Text, Badge, Spinner, Input, Button } from "@fluentui/react-components";
 import { useFlowCollaboration, type MessageHandler, type ActiveUser } from "../hooks/useFlowCollaboration";
 import { v4 as uuidv4 } from 'uuid';
-import { c4NodeTypes } from "./C4Nodes";
+import { c4NodeTypes } from './C4Nodes';
 
 import "@xyflow/react/dist/style.css";
 
@@ -34,10 +28,23 @@ const useStyles = makeStyles({
     flexDirection: "column",
   },
   controls: {
-    padding: tokens.spacingHorizontalM,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalM}`,
+    borderBottom: `1px solid ${tokens.colorBrandBackground}`,
     display: "flex",
     gap: tokens.spacingHorizontalM,
+    backgroundColor: tokens.colorNeutralBackground1,
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center", // Vertically align items
+  },
+  ghostButton: {
+    backgroundColor: "transparent",
+    color: tokens.colorNeutralForeground1,
+    border: `1px solid ${tokens.colorNeutralForegroundInverted}`,
+    borderRadius: tokens.borderRadiusMedium,
+    "&:hover": {
+      backgroundColor: tokens.colorNeutralBackground3,
+    },
   },
   flowContainer: {
     flex: 1,
@@ -53,26 +60,6 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorBrandBackground}`,
     backgroundColor: tokens.colorNeutralBackground1,
   },
-  // statusPanel: {
-  //   backgroundColor: tokens.colorNeutralBackground1,
-  //   padding: tokens.spacingVerticalM,
-  //   borderRadius: tokens.borderRadiusMedium,
-  //   boxShadow: tokens.shadow4,
-  // },
-  // collaborationStatus: {
-  //   marginBottom: tokens.spacingVerticalM,
-  //   display: "flex",
-  //   alignItems: "center",
-  //   gap: tokens.spacingHorizontalM,
-  // },
-  // userIndicator: {
-  //   display: "inline-block",
-  //   width: "8px",
-  //   height: "8px",
-  //   borderRadius: "50%",
-  //   backgroundColor: tokens.colorBrandForeground1,
-  //   marginRight: tokens.spacingHorizontalM,
-  // },
   loadingOverlay: {
     position: "absolute",
     top: 0,
@@ -87,139 +74,126 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingHorizontalL,
   },
-  // messagingContainer: {
-  //   position: "absolute",
-  //   bottom: tokens.spacingHorizontalL,
-  //   left: tokens.spacingHorizontalL,
-  //   width: "300px",
-  //   backgroundColor: tokens.colorNeutralBackground1,
-  //   padding: tokens.spacingVerticalM,
-  //   borderRadius: tokens.borderRadiusMedium,
-  //   boxShadow: tokens.shadow4,
-  //   zIndex: 1000,
-  // },
-  // messageList: {
-  //   maxHeight: "150px",
-  //   overflowY: "auto",
-  //   marginBottom: tokens.spacingVerticalM,
-  //   padding: tokens.spacingHorizontalM,
-  //   border: `1px solid ${tokens.colorNeutralStroke1}`,
-  //   borderRadius: tokens.borderRadiusSmall,
-  // },
-  // messageItem: {
-  //   padding: "4px 0",
-  //   borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
-  // },
-  // messageInput: {
-  //   display: "flex",
-  //   gap: tokens.spacingHorizontalM,
-  // },
   nodeControls: {
     position: "absolute",
     top: tokens.spacingHorizontalL,
     left: tokens.spacingHorizontalL,
+    zIndex: 10,
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
     backgroundColor: tokens.colorNeutralBackground1,
     padding: tokens.spacingVerticalM,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow4,
-    zIndex: 1000,
   },
   editPanel: {
     position: "absolute",
     top: tokens.spacingHorizontalL,
     right: tokens.spacingHorizontalL,
+    zIndex: 10,
+    width: "300px",
     backgroundColor: tokens.colorNeutralBackground1,
     padding: tokens.spacingVerticalM,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow4,
-    zIndex: 1000,
-    width: "250px",
   },
   editForm: {
     display: "flex",
     flexDirection: "column",
-    gap: tokens.spacingHorizontalM,
+    gap: tokens.spacingVerticalM,
   },
   nodeEditForm: {
-    padding: tokens.spacingHorizontalL,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow16,
-    width: '300px',
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    zIndex: 1000,
+    marginTop: tokens.spacingVerticalM,
   },
   formField: {
-    marginBottom: tokens.spacingVerticalM,
-  },
-  buttonGroup: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: tokens.spacingVerticalL,
-  },
-  toolbar: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalM,
-    padding: tokens.spacingVerticalS,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
-  },
-  statusPanel: {
-    padding: tokens.spacingHorizontalL,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalM,
-  },
-  collaborationStatus: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalS,
     marginBottom: tokens.spacingVerticalS,
   },
-  userIndicator: {
-    display: 'inline-block',
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-    backgroundColor: tokens.colorPaletteGreenForeground1,
-    marginRight: tokens.spacingHorizontalXS,
+  buttonGroup: {
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+    marginTop: tokens.spacingVerticalM,
+  },
+  toolbar: {
+    display: "flex",
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalM,
+  },
+  statusPanel: {
+    position: "absolute",
+    bottom: tokens.spacingHorizontalL,
+    right: tokens.spacingHorizontalL,
+    zIndex: 10,
+    backgroundColor: tokens.colorNeutralBackground1,
+    padding: tokens.spacingVerticalM,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow4,
+    width: "300px",
+  },
+  statusHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: tokens.spacingVerticalS,
+  },
+  userList: {
+    marginTop: tokens.spacingVerticalS,
+  },
+  userItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+    padding: `${tokens.spacingVerticalXXS} 0`,
+  },
+  panelButton: {
+    marginLeft: "auto",
   },
   messagingContainer: {
-    padding: tokens.spacingHorizontalL,
+    position: "absolute",
+    bottom: tokens.spacingHorizontalL,
+    left: tokens.spacingHorizontalL,
+    zIndex: 10,
+    width: "300px",
     backgroundColor: tokens.colorNeutralBackground1,
+    padding: tokens.spacingVerticalM,
     borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalM,
+    boxShadow: tokens.shadow4,
   },
   messageList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalS,
-    maxHeight: '200px',
-    overflowY: 'auto',
-    padding: tokens.spacingVerticalS,
+    maxHeight: "150px",
+    overflowY: "auto",
+    marginBottom: tokens.spacingVerticalM,
+    padding: tokens.spacingHorizontalM,
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     borderRadius: tokens.borderRadiusSmall,
   },
   messageItem: {
-    padding: tokens.spacingVerticalXS,
+    padding: "4px 0",
     borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
   },
   messageInput: {
-    display: 'flex',
-    gap: tokens.spacingHorizontalS,
-    marginTop: tokens.spacingVerticalS,
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
   },
-  panelButton: {
-    marginTop: tokens.spacingVerticalS,
-    alignSelf: 'flex-end',
-  }
+  collaborationStatus: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+  },
+  userIndicator: {
+    display: "inline-block",
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    backgroundColor: tokens.colorBrandForeground1,
+    marginRight: tokens.spacingHorizontalM,
+  },
+  nodeGroup: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    marginBottom: tokens.spacingVerticalS,
+  },
 } as const);
 
 // Custom node component
@@ -289,8 +263,6 @@ export default function ExperimentalFlow() {
 // Flow content component that uses the hooks
 function FlowContent() {
   const styles = useStyles();
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [connected, setConnected] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [activeUsers, setActiveUsers] = useState<ActiveUser[]>([]);
@@ -301,7 +273,7 @@ function FlowContent() {
   const [editedNodeData, setEditedNodeData] = useState<Record<string, string>>({});
   const [showMessageHistory, setShowMessageHistory] = useState(true);
   const [showStatusPanel, setShowStatusPanel] = useState(true);
-  const reactFlowInstance = useReactFlow();
+  // const reactFlowInstance = useReactFlow();
 
   // Define custom message handler
   const handleCustomMessage: MessageHandler = useCallback((message) => {
@@ -325,43 +297,18 @@ function FlowContent() {
 
   // Initialize collaboration hook with message handler
   const collaboration = useFlowCollaboration({
-    onNodesChange: useCallback(
-      (changes: NodeChange[]) => {
-        console.log("Node changes:", changes);
-        setNodes((nds) => applyNodeChanges(changes, nds));
-      },
-      []
-    ),
-    onEdgesChange: useCallback(
-      (changes: EdgeChange[]) => {
-        console.log("Edge changes:", changes);
-        setEdges((eds) => applyEdgeChanges(changes, eds));
-      },
-      []
-    ),
+    initialNodes,
+    initialEdges,
     onMessage: handleCustomMessage,
     onActiveUsersChange: handleActiveUsersChange
   });
 
-  // Connect nodes when a connection is created
-  const onConnect = useCallback(
-    (connection: Connection) => {
-      const newEdge = {
-        id: `e${connection.source}-${connection.target}`,
-        source: connection.source || "",
-        target: connection.target || "",
-      };
-      setEdges((eds) => [...eds, newEdge]);
-      
-      // Broadcast edge update
-      collaboration.broadcastEdgeUpdate(newEdge);
-      setLastUpdate(`Edge created: ${newEdge.id}`);
-      
-      // Return the new edge to satisfy TypeScript
-      return newEdge;
-    },
-    [collaboration]
-  );
+  // Get nodes and edges from the store
+  const nodes = collaboration.nodes;
+  const edges = collaboration.edges;
+  const onNodesChange = collaboration.onNodesChange;
+  const onEdgesChange = collaboration.onEdgesChange;
+  const onConnect = collaboration.onConnect;
 
   // Handle node drag
   const onNodeDragStop: NodeMouseHandler = useCallback(
@@ -369,6 +316,7 @@ function FlowContent() {
       console.log("Node dragged:", node);
       collaboration.broadcastPositionUpdate(node.id, node.position);
       setLastUpdate(`Node ${node.id} moved to (${Math.round(node.position.x)}, ${Math.round(node.position.y)})`);
+      return node; // Return the node to satisfy TypeScript
     },
     [collaboration]
   );
@@ -382,6 +330,7 @@ function FlowContent() {
       // Set up connection status listener
       const handleConnectionChange = (isConnected: boolean) => {
         setConnected(isConnected);
+        return isConnected; // Return a value to satisfy TypeScript
       };
       
       collaboration.onConnectionChange(handleConnectionChange);
@@ -390,6 +339,7 @@ function FlowContent() {
         // Clean up will be handled by the hook
       };
     }
+    return undefined; // Return a value for the case when collaboration is falsy
   }, [collaboration]);
 
   // Add a new node
@@ -408,13 +358,13 @@ function FlowContent() {
     console.log("Adding new node:", newNode);
     
     // Add node locally
-    setNodes((nds) => [...nds, newNode]);
+    onNodesChange([{ type: 'add', item: newNode }]);
     
     // Broadcast node creation to other clients
     collaboration.broadcastNodeUpdate(newNode);
     
     setLastUpdate(`Node added: ${newNode.id}`);
-  }, [nodes.length, collaboration]);
+  }, [nodes.length, collaboration, onNodesChange]);
 
   // Add a new person node
   const addPersonNode = useCallback((parentId?: string) => {
@@ -438,13 +388,13 @@ function FlowContent() {
     console.log("Adding new person node:", newNode);
     
     // Add node locally
-    setNodes((nds) => [...nds, newNode]);
+    onNodesChange([{ type: 'add', item: newNode }]);
     
     // Broadcast node creation to other clients
     collaboration.broadcastNodeUpdate(newNode);
     
     setLastUpdate(`Person added: ${newNode.id}`);
-  }, [nodes.length, collaboration]);
+  }, [nodes.length, collaboration, onNodesChange]);
 
   // Add a new container node
   const addContainerNode = useCallback((parentId?: string) => {
@@ -472,13 +422,13 @@ function FlowContent() {
     console.log("Adding new container node:", newNode);
     
     // Add node locally
-    setNodes((nds) => [...nds, newNode]);
+    onNodesChange([{ type: 'add', item: newNode }]);
     
     // Broadcast node creation to other clients
     collaboration.broadcastNodeUpdate(newNode);
     
     setLastUpdate(`Container added: ${newNode.id}`);
-  }, [nodes.length, collaboration]);
+  }, [nodes.length, collaboration, onNodesChange]);
 
   // Add a new component node
   const addComponentNode = useCallback((parentId?: string) => {
@@ -502,13 +452,13 @@ function FlowContent() {
     console.log("Adding new component node:", newNode);
     
     // Add node locally
-    setNodes((nds) => [...nds, newNode]);
+    onNodesChange([{ type: 'add', item: newNode }]);
     
     // Broadcast node creation to other clients
     collaboration.broadcastNodeUpdate(newNode);
     
     setLastUpdate(`Component added: ${newNode.id}`);
-  }, [nodes.length, collaboration]);
+  }, [nodes.length, collaboration, onNodesChange]);
 
   // Add a new system node
   const addSystemNode = useCallback((parentId?: string) => {
@@ -532,47 +482,39 @@ function FlowContent() {
     console.log("Adding new system node:", newNode);
     
     // Add node locally
-    setNodes((nds) => [...nds, newNode]);
+    onNodesChange([{ type: 'add', item: newNode }]);
     
     // Broadcast node creation to other clients
     collaboration.broadcastNodeUpdate(newNode);
     
     setLastUpdate(`System added: ${newNode.id}`);
-  }, [nodes.length, collaboration]);
+  }, [nodes.length, collaboration, onNodesChange]);
 
   // Delete selected nodes and edges
   const deleteSelected = useCallback(() => {
     const selectedNodes = nodes.filter((node) => node.selected);
     const selectedEdges = edges.filter((edge) => edge.selected);
     
-    console.log("Deleting selected:", { nodes: selectedNodes, edges: selectedEdges });
+    console.log("Deleting selected nodes:", selectedNodes);
+    console.log("Deleting selected edges:", selectedEdges);
+    
+    if (selectedNodes.length === 0 && selectedEdges.length === 0) {
+      console.log("No nodes or edges selected for deletion");
+      return;
+    }
     
     // Delete nodes
     if (selectedNodes.length > 0) {
-      // Also delete any child nodes
-      const nodesToDelete = new Set<string>();
+      const nodesToDelete = new Set(selectedNodes.map((node) => node.id));
       
-      // First collect all selected nodes
-      for (const node of selectedNodes) {
-        nodesToDelete.add(node.id);
-      }
-      
-      // Then collect all child nodes of selected container nodes
-      for (const node of selectedNodes) {
-        if (node.type === 'container') {
-          const childNodes = nodes.filter(n => n.parentId === node.id);
-          for (const child of childNodes) {
-            nodesToDelete.add(child.id);
-          }
-        }
-      }
-      
-      // Delete all collected nodes
+      // Broadcast node deletions
       for (const nodeId of nodesToDelete) {
         collaboration.broadcastNodeDelete(nodeId);
       }
       
-      setNodes((nds) => nds.filter((node) => !nodesToDelete.has(node.id)));
+      onNodesChange(
+        Array.from(nodesToDelete).map(id => ({ type: 'remove', id }))
+      );
     }
     
     // Delete edges
@@ -580,11 +522,13 @@ function FlowContent() {
       for (const edge of selectedEdges) {
         collaboration.broadcastEdgeDelete(edge.id);
       }
-      setEdges((eds) => eds.filter((edge) => !edge.selected));
+      onEdgesChange(
+        selectedEdges.map(edge => ({ type: 'remove', id: edge.id }))
+      );
     }
     
     setLastUpdate(`Deleted ${selectedNodes.length} nodes and ${selectedEdges.length} edges`);
-  }, [nodes, edges, collaboration]);
+  }, [nodes, edges, collaboration, onNodesChange, onEdgesChange]);
 
   // Send a message
   const sendMessage = useCallback(() => {
@@ -606,28 +550,39 @@ function FlowContent() {
   }, [messageInput, connected, collaboration]);
 
   // Handle node selection
-  const onSelectionChange = useCallback(({ nodes: selectedNodes }: { nodes: Node[] }) => {
+  const onSelectionChange = useCallback(({ nodes: selectedNodes, edges: selectedEdges }: { 
+    nodes: Node[]; 
+    edges: Edge[];
+  }) => {
+    console.log("Selection changed:", { nodes: selectedNodes, edges: selectedEdges });
+    
+    // Set selected node for editing if exactly one node is selected
     if (selectedNodes.length === 1) {
       const node = selectedNodes[0];
-      if (node) {  
+      // Ensure node is defined before using it
+      if (node) {
         setSelectedNode(node);
+        
         // Initialize edit form with current node data
-        const nodeData = node.data as Record<string, string>;
-        setEditedNodeData({
-          label: nodeData.label || '',
-          description: nodeData.description || '',
-          ...(nodeData.role ? { role: nodeData.role } : {}),
-          ...(nodeData.technology ? { technology: nodeData.technology } : {}),
-          ...(nodeData.external !== undefined ? { external: String(nodeData.external) } : {})
-        });
-      } else {
-        setSelectedNode(null);
-        setEditedNodeData({});
+        const initialData: Record<string, string> = {};
+        
+        if (node.data) {
+          // Use for...of instead of forEach
+          for (const [key, value] of Object.entries(node.data)) {
+            if (typeof value === 'string') {
+              initialData[key] = value;
+            }
+          }
+        }
+        
+        setEditedNodeData(initialData);
       }
     } else {
       setSelectedNode(null);
-      setEditedNodeData({});
     }
+    
+    // Return the selection to satisfy TypeScript
+    return { nodes: selectedNodes, edges: selectedEdges };
   }, []);
 
   // Update node data
@@ -648,15 +603,17 @@ function FlowContent() {
     };
     
     // Update node locally
-    setNodes(nds => 
-      nds.map(n => (n.id === selectedNode.id ? updatedNode : n))
-    );
+    onNodesChange([{ 
+      type: 'replace', 
+      id: updatedNode.id,
+      item: updatedNode as Node 
+    }]);
     
     // Broadcast node update to other clients
     collaboration.broadcastNodeUpdate(updatedNode);
     
     setLastUpdate(`Updated ${selectedNode.type} node: ${selectedNode.id}`);
-  }, [selectedNode, editedNodeData, collaboration]);
+  }, [selectedNode, editedNodeData, collaboration, onNodesChange]);
 
   // Handle input change in edit form
   const handleEditInputChange = useCallback((field: string, value: string) => {
@@ -666,15 +623,266 @@ function FlowContent() {
     }));
   }, []);
 
+  // Add a domain event node
+  const addDomainEventNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'domainEvent',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Domain Event',
+        description: 'Past-tense event description'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Domain Event added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add a command node
+  const addCommandNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'command',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Command',
+        description: 'Imperative action'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Command added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add an actor node
+  const addActorNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'actor',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Actor',
+        description: 'Person or system issuing commands'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Actor added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add an aggregate node
+  const addAggregateNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'aggregate',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Aggregate',
+        description: 'Cluster of domain objects'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Aggregate added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add a policy node
+  const addPolicyNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'policy',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Policy',
+        description: 'When [event], then [action]'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Policy added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add a read model node
+  const addReadModelNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'readModel',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Read Model',
+        description: 'Information view for decisions'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Read Model added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add an external system node
+  const addExternalSystemEventNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'externalSystem',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New External System',
+        description: 'System outside your boundary'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`External System added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
+  // Add a hot spot node
+  const addHotSpotNode = useCallback((parentId?: string) => {
+    if (!collaboration || !initialized) return;
+    
+    const newNodeId = uuidv4();
+    const newNode: Node = {
+      id: newNodeId,
+      type: 'hotSpot',
+      position: {
+        x: parentId ? 50 : Math.random() * 500,
+        y: parentId ? 50 : Math.random() * 300,
+      },
+      parentId: parentId,
+      extent: parentId ? 'parent' : undefined,
+      data: { 
+        label: 'New Hot Spot',
+        description: 'Area of confusion or conflict'
+      },
+    };
+    
+    // Add node locally
+    onNodesChange([{ type: 'add', item: newNode }]);
+    
+    // Broadcast node creation to other clients
+    collaboration.broadcastNodeUpdate(newNode);
+    
+    setLastUpdate(`Hot Spot added: ${newNode.id}`);
+  }, [collaboration, initialized, onNodesChange]);
+
   return (
     <div className={styles.root}>
       <div className={styles.controls}>
-        <Button appearance="primary" onClick={addNode} disabled={!initialized}>Add Node</Button>
-        <Button appearance="primary" onClick={() => addPersonNode()} disabled={!initialized}>Add Person</Button>
-        <Button appearance="primary" onClick={() => addContainerNode()} disabled={!initialized}>Add Container</Button>
-        <Button appearance="primary" onClick={() => addComponentNode()} disabled={!initialized}>Add Component</Button>
-        <Button appearance="primary" onClick={() => addSystemNode()} disabled={!initialized}>Add System</Button>
-        <Button appearance="outline" onClick={deleteSelected} disabled={!initialized}>Delete Selected</Button>
+        <Button appearance="transparent" size="small" onClick={addNode} disabled={!initialized} className={styles.ghostButton}>Add Node</Button>
+        
+        {/* C4 Diagram Nodes */}
+        <div className={styles.nodeGroup}>
+          <Text size={200} weight="semibold" style={{ marginRight: '8px' }}>C4:</Text>
+          <Button appearance="transparent" size="small" onClick={() => addPersonNode()} disabled={!initialized} className={styles.ghostButton}>Person</Button>
+          <Button appearance="transparent" size="small" onClick={() => addContainerNode()} disabled={!initialized} className={styles.ghostButton}>Container</Button>
+          <Button appearance="transparent" size="small" onClick={() => addComponentNode()} disabled={!initialized} className={styles.ghostButton}>Component</Button>
+          <Button appearance="transparent" size="small" onClick={() => addSystemNode()} disabled={!initialized} className={styles.ghostButton}>System</Button>
+        </div>
+        
+        {/* Event Storming Nodes */}
+        <div className={styles.nodeGroup}>
+          <Text size={200} weight="semibold" style={{ marginRight: '8px' }}>Event Storming:</Text>
+          <Button appearance="transparent" size="small" onClick={() => addDomainEventNode()} disabled={!initialized} className={styles.ghostButton}>Domain Event</Button>
+          <Button appearance="transparent" size="small" onClick={() => addCommandNode()} disabled={!initialized} className={styles.ghostButton}>Command</Button>
+          <Button appearance="transparent" size="small" onClick={() => addActorNode()} disabled={!initialized} className={styles.ghostButton}>Actor</Button>
+          <Button appearance="transparent" size="small" onClick={() => addAggregateNode()} disabled={!initialized} className={styles.ghostButton}>Aggregate</Button>
+          <Button appearance="transparent" size="small" onClick={() => addPolicyNode()} disabled={!initialized} className={styles.ghostButton}>Policy</Button>
+          <Button appearance="transparent" size="small" onClick={() => addReadModelNode()} disabled={!initialized} className={styles.ghostButton}>Read Model</Button>
+          <Button appearance="transparent" size="small" onClick={() => addExternalSystemEventNode()} disabled={!initialized} className={styles.ghostButton}>External System</Button>
+          <Button appearance="transparent" size="small" onClick={() => addHotSpotNode()} disabled={!initialized} className={styles.ghostButton}>Hot Spot</Button>
+        </div>
+        
+        <Button appearance="subtle" size="small" onClick={deleteSelected} disabled={!initialized}>Delete Selected</Button>
       </div>
       
       <div className={styles.flowContainer}>
@@ -690,8 +898,8 @@ function FlowContent() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={collaboration.onNodesChange}
-          onEdgesChange={collaboration.onEdgesChange}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeDragStop={onNodeDragStop}
           onSelectionChange={onSelectionChange}
@@ -705,18 +913,36 @@ function FlowContent() {
           {selectedNode && selectedNode.type === 'container' && (
             <Panel position="top-left" className={styles.nodeControls}>
               <Text weight="semibold">Add to Container: {(selectedNode.data as { label: string }).label}</Text>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <Button size="small" onClick={() => addPersonNode(selectedNode.id)}>Add Person</Button>
-                <Button size="small" onClick={() => addComponentNode(selectedNode.id)}>Add Component</Button>
-                <Button size="small" onClick={() => addSystemNode(selectedNode.id)}>Add System</Button>
-                <Button size="small" onClick={() => addContainerNode(selectedNode.id)}>Add Container</Button>
+              
+              {/* C4 Nodes for Container */}
+              <div className={styles.nodeGroup} style={{ marginTop: '8px' }}>
+                <Text size={200} weight="semibold" style={{ marginRight: '8px' }}>C4:</Text>
+                <Button appearance="transparent" size="small" onClick={() => addPersonNode(selectedNode.id)} className={styles.ghostButton}>Person</Button>
+                <Button appearance="transparent" size="small" onClick={() => addComponentNode(selectedNode.id)} className={styles.ghostButton}>Component</Button>
+                <Button appearance="transparent" size="small" onClick={() => addSystemNode(selectedNode.id)} className={styles.ghostButton}>System</Button>
+                <Button appearance="transparent" size="small" onClick={() => addContainerNode(selectedNode.id)} className={styles.ghostButton}>Container</Button>
+              </div>
+              
+              {/* Event Storming Nodes for Container */}
+              <div className={styles.nodeGroup} style={{ marginTop: '8px' }}>
+                <Text size={200} weight="semibold" style={{ marginRight: '8px' }}>Event Storming:</Text>
+                <Button appearance="transparent" size="small" onClick={() => addDomainEventNode(selectedNode.id)} className={styles.ghostButton}>Domain Event</Button>
+                <Button appearance="transparent" size="small" onClick={() => addCommandNode(selectedNode.id)} className={styles.ghostButton}>Command</Button>
+                <Button appearance="transparent" size="small" onClick={() => addActorNode(selectedNode.id)} className={styles.ghostButton}>Actor</Button>
+                <Button appearance="transparent" size="small" onClick={() => addAggregateNode(selectedNode.id)} className={styles.ghostButton}>Aggregate</Button>
+              </div>
+              <div className={styles.nodeGroup} style={{ marginTop: '8px', marginLeft: '96px' }}>
+                <Button appearance="transparent" size="small" onClick={() => addPolicyNode(selectedNode.id)} className={styles.ghostButton}>Policy</Button>
+                <Button appearance="transparent" size="small" onClick={() => addReadModelNode(selectedNode.id)} className={styles.ghostButton}>Read Model</Button>
+                <Button appearance="transparent" size="small" onClick={() => addExternalSystemEventNode(selectedNode.id)} className={styles.ghostButton}>External System</Button>
+                <Button appearance="transparent" size="small" onClick={() => addHotSpotNode(selectedNode.id)} className={styles.ghostButton}>Hot Spot</Button>
               </div>
             </Panel>
           )}
           
           {/* Node Edit Panel */}
           {selectedNode && (
-            <Panel position="top-right" className={styles.nodeEditForm}>
+            <Panel position="top-right" className={styles.editPanel}>
               <Text weight="semibold">Edit {selectedNode.type} Node</Text>
               <div className={styles.editForm}>
                 <div>
@@ -785,6 +1011,7 @@ function FlowContent() {
                 
                 <Button 
                   appearance="primary" 
+                  size="small"
                   onClick={updateNodeData}
                 >
                   Save Changes
@@ -829,6 +1056,7 @@ function FlowContent() {
                 />
                 <Button 
                   appearance="primary"
+                  size="small"
                   onClick={sendMessage}
                   disabled={!connected || !messageInput.trim()}
                 >
@@ -836,7 +1064,7 @@ function FlowContent() {
                 </Button>
               </div>
               <Button 
-                appearance="primary" 
+                appearance="secondary" 
                 onClick={() => setShowMessageHistory(false)}
                 className={styles.panelButton}
               >
@@ -846,7 +1074,7 @@ function FlowContent() {
           )}
           {!showMessageHistory && (
             <Button 
-              appearance="primary" 
+              appearance="secondary" 
               onClick={() => setShowMessageHistory(true)}
               style={{ 
                 position: 'absolute', 
@@ -868,7 +1096,7 @@ function FlowContent() {
               zIndex: 1000
             }}>
               <Button 
-                appearance="primary" 
+                appearance="subtle" 
                 onClick={() => setShowStatusPanel(false)}
                 style={{ 
                   position: 'absolute', 
@@ -921,7 +1149,7 @@ function FlowContent() {
           )}
           {!showStatusPanel && (
             <Button 
-              appearance="primary" 
+              appearance="secondary" 
               onClick={() => setShowStatusPanel(true)}
               style={{ 
                 position: 'absolute', 

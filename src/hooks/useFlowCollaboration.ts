@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PartySocket } from "partysocket";
-import type { NodeChange, EdgeChange, Node, Edge } from "@xyflow/react";
+import { applyNodeChanges, applyEdgeChanges } from "@xyflow/react";
+import type { NodeChange, EdgeChange, Node, Edge, Connection } from "@xyflow/react";
+import { createStore } from '@xstate/store';
+import { useSelector } from '@xstate/store/react';
 
 // Define message data types
 interface NodeUpdateData {
@@ -26,7 +29,6 @@ interface PositionUpdateData {
 interface DeleteData {
   id: string;
 }
-
 
 // Define message types
 export type MessageType = 
@@ -55,10 +57,16 @@ export interface ActiveUser {
   name: string;
 }
 
+// Define flow state type
+interface FlowState {
+  nodes: Array<Node>;
+  edges: Array<Edge>;
+}
+
 // Define hook props
 interface UseFlowCollaborationProps {
-  onNodesChange: (changes: NodeChange[]) => void;
-  onEdgesChange: (changes: EdgeChange[]) => void;
+  initialNodes?: Array<Node>;
+  initialEdges?: Array<Edge>;
   onMessage?: MessageHandler; // Optional message handler for custom message types
   onActiveUsersChange?: (users: ActiveUser[]) => void;
 }
@@ -67,8 +75,11 @@ interface UseFlowCollaborationProps {
 interface UseFlowCollaboration {
   isConnected: boolean;
   isInitialized: boolean;
+  nodes: Array<Node>;
+  edges: Array<Edge>;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
+  onConnect: (connection: Connection) => void;
   broadcastNodeUpdate: (node: Node) => void;
   broadcastEdgeUpdate: (edge: Edge) => void;
   broadcastNodeDelete: (nodeId: string) => void;
@@ -79,9 +90,25 @@ interface UseFlowCollaboration {
   socket: PartySocket | null; // Expose socket for direct access if needed
 }
 
+// Helper functions for updating nodes and edges
+const updateNodes = (changes: Array<NodeChange>) => (nodes: Array<Node>): Array<Node> =>
+  applyNodeChanges(changes, nodes);
+
+const updateEdges = (changes: Array<EdgeChange>) => (edges: Array<Edge>): Array<Edge> =>
+  applyEdgeChanges(changes, edges);
+
+const addEdge = (connection: Connection) => (edges: Array<Edge>): Array<Edge> => [
+  ...edges,
+  {
+    ...connection,
+    animated: true,
+    id: `e${connection.source}-${connection.target}`,
+  },
+];
+
 export function useFlowCollaboration({
-  onNodesChange,
-  onEdgesChange,
+  initialNodes = [],
+  initialEdges = [],
   onMessage,
   onActiveUsersChange
 }: UseFlowCollaborationProps): UseFlowCollaboration {
@@ -90,62 +117,110 @@ export function useFlowCollaboration({
   const socketRef = useRef<PartySocket | null>(null);
   const connectionCallbacksRef = useRef<((isConnected: boolean) => void)[]>([]);
   
+  // Create flow store
+  const flowStore = useRef(createStore({
+    context: {
+      nodes: initialNodes,
+      edges: initialEdges,
+    } as FlowState,
+    on: {
+      updateNodes: (context, event: { changes: Array<NodeChange> }) => ({
+        ...context,
+        nodes: updateNodes(event.changes)(context.nodes),
+      }),
+      updateEdges: (context, event: { changes: Array<EdgeChange> }) => ({
+        ...context,
+        edges: updateEdges(event.changes)(context.edges),
+      }),
+      connect: (context, event: { connection: Connection }) => ({
+        ...context,
+        edges: addEdge(event.connection)(context.edges),
+      }),
+      setNodes: (context, event: { nodes: Array<Node> }) => ({
+        ...context,
+        nodes: event.nodes,
+      }),
+      setEdges: (context, event: { edges: Array<Edge> }) => ({
+        ...context,
+        edges: event.edges,
+      }),
+      reset: () => ({
+        nodes: [],
+        edges: [],
+      }),
+    },
+  })).current;
+  
+  // Select nodes and edges from store
+  const nodes = useSelector(flowStore, state => state.context.nodes);
+  const edges = useSelector(flowStore, state => state.context.edges);
+  
   // Define message handlers
   const messageHandlers = useRef<MessageHandlers>({
     node_update: (data: unknown) => {
       console.log("Received node update:", data);
       const nodeData = data as NodeUpdateData;
       
-      // Use a more reliable approach for node updates
-      // First check if the node exists
-      onNodesChange([{ 
-        type: 'remove', 
-        id: nodeData.id 
-      }]);
+      // First remove the node if it exists
+      flowStore.send({ 
+        type: 'updateNodes', 
+        changes: [{ type: 'remove', id: nodeData.id }] 
+      });
       
       // Then add it as a new node
-      onNodesChange([{ 
-        type: 'add', 
-        item: nodeData 
-      }]);
+      flowStore.send({ 
+        type: 'updateNodes', 
+        changes: [{ type: 'add', item: nodeData }] 
+      });
     },
     edge_update: (data: unknown) => {
       console.log("Received edge update:", data);
       const edgeData = data as EdgeUpdateData;
       
-      // Use a more reliable approach for edge updates
-      // First check if the edge exists
-      onEdgesChange([{ 
-        type: 'remove', 
-        id: edgeData.id 
-      }]);
+      // First remove the edge if it exists
+      flowStore.send({ 
+        type: 'updateEdges', 
+        changes: [{ type: 'remove', id: edgeData.id }] 
+      });
       
       // Then add it as a new edge
-      onEdgesChange([{ 
-        type: 'add', 
-        item: edgeData 
-      }]);
+      flowStore.send({ 
+        type: 'updateEdges', 
+        changes: [{ type: 'add', item: edgeData }] 
+      });
     },
     node_delete: (data: unknown) => {
       console.log("Received node delete:", data);
       const deleteData = data as DeleteData;
-      onNodesChange([{ type: 'remove', id: deleteData.id }]);
+      flowStore.send({ 
+        type: 'updateNodes', 
+        changes: [{ type: 'remove', id: deleteData.id }] 
+      });
     },
     edge_delete: (data: unknown) => {
       console.log("Received edge delete:", data);
       const deleteData = data as DeleteData;
-      onEdgesChange([{ type: 'remove', id: deleteData.id }]);
+      flowStore.send({ 
+        type: 'updateEdges', 
+        changes: [{ type: 'remove', id: deleteData.id }] 
+      });
     },
     position_update: (data: unknown) => {
       console.log("Received position update:", data);
       const positionData = data as PositionUpdateData;
-      onNodesChange([{ type: 'position', id: positionData.id, position: positionData.position }]);
+      flowStore.send({ 
+        type: 'updateNodes', 
+        changes: [{ 
+          type: 'position', 
+          id: positionData.id, 
+          position: positionData.position 
+        }] 
+      });
     },
     clear_state: () => {
       console.log("Received clear state message");
-      // Clear all nodes and edges
-      onNodesChange([{ type: 'remove', id: 'all' }]);
-      onEdgesChange([{ type: 'remove', id: 'all' }]);
+      // Reset the store
+      flowStore.send({ type: 'reset' });
     },
     state_complete: () => {
       console.log("State synchronization complete");
@@ -251,6 +326,22 @@ export function useFlowCollaboration({
     };
   }, [messageHandlers, onMessage]);
   
+  // Define event handlers for the flow
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    console.log("Handling node changes:", changes);
+    flowStore.send({ type: 'updateNodes', changes });
+  }, [flowStore]);
+  
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    console.log("Handling edge changes:", changes);
+    flowStore.send({ type: 'updateEdges', changes });
+  }, [flowStore]);
+  
+  const onConnect = useCallback((connection: Connection) => {
+    console.log("Handling connection:", connection);
+    flowStore.send({ type: 'connect', connection });
+  }, [flowStore]);
+  
   // Define broadcast functions
   const broadcastNodeUpdate = useCallback((node: Node) => {
     if (!socketRef.current || !isConnected) return;
@@ -322,23 +413,14 @@ export function useFlowCollaboration({
     };
   }, [isConnected]);
   
-  // Define custom node changes handler
-  const handleNodesChange = useCallback((changes: NodeChange[]) => {
-    console.log("Handling node changes:", changes);
-    onNodesChange(changes);
-  }, [onNodesChange]);
-  
-  // Define custom edge changes handler
-  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-    console.log("Handling edge changes:", changes);
-    onEdgesChange(changes);
-  }, [onEdgesChange]);
-  
   return {
     isConnected,
     isInitialized,
-    onNodesChange: handleNodesChange,
-    onEdgesChange: handleEdgesChange,
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
     broadcastNodeUpdate,
     broadcastEdgeUpdate,
     broadcastNodeDelete,

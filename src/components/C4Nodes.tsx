@@ -1,6 +1,16 @@
 import { Handle, Position, NodeResizer } from '@xyflow/react';
 import { makeStyles, tokens, Text } from '@fluentui/react-components';
-import { c4Tokens } from './App';
+import { 
+  c4Tokens, 
+  EVENT_STORMING_DOMAIN_EVENT,
+  EVENT_STORMING_COMMAND,
+  EVENT_STORMING_ACTOR,
+  EVENT_STORMING_AGGREGATE,
+  EVENT_STORMING_POLICY,
+  EVENT_STORMING_READ_MODEL,
+  EVENT_STORMING_EXTERNAL_SYSTEM,
+  EVENT_STORMING_HOT_SPOT
+} from '../theme/c4Theme';
 
 // Styles for C4 nodes
 const useStyles = makeStyles({
@@ -40,14 +50,6 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackgroundInverted,
     padding: tokens.spacingVerticalM,
     minWidth: c4Tokens.containerWidth,
-    minHeight: c4Tokens.containerHeight,
-    width: '100%',
-    height: '100%',
-    borderRadius: tokens.borderRadiusMedium,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    position: 'relative',
   },
   containerHeader: {
     width: '100%',
@@ -123,6 +125,93 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Event Storming node styles
+  eventStormingBase: {
+    padding: c4Tokens.nodePadding,
+    borderRadius: tokens.borderRadiusMedium,
+    width: c4Tokens.nodeWidth,
+    fontSize: c4Tokens.descriptionFontSize,
+    color: tokens.colorNeutralForegroundInverted, // White text
+    textAlign: 'center',
+    boxShadow: tokens.shadow4,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    backgroundColor: tokens.colorNeutralBackgroundInverted, // Black background
+  },
+  domainEventNode: {
+    border: `2px solid ${EVENT_STORMING_DOMAIN_EVENT}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  commandNode: {
+    border: `2px solid ${EVENT_STORMING_COMMAND}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  actorNode: {
+    border: `2px solid ${EVENT_STORMING_ACTOR}`,
+    position: 'relative',
+    paddingTop: '40px', // Space for the stick figure
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  actorIcon: {
+    position: 'absolute',
+    top: '5px',
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    backgroundColor: EVENT_STORMING_ACTOR,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aggregateNode: {
+    border: `2px solid ${EVENT_STORMING_AGGREGATE}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  policyNode: {
+    border: `2px solid ${EVENT_STORMING_POLICY}`,
+    position: 'relative',
+    paddingTop: '40px', // Space for the gear icon
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  policyIcon: {
+    position: 'absolute',
+    top: '5px',
+    width: '30px',
+    height: '30px',
+    borderRadius: '50%',
+    backgroundColor: EVENT_STORMING_POLICY,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  readModelNode: {
+    border: `2px solid ${EVENT_STORMING_READ_MODEL}`,
+    position: 'relative',
+    paddingTop: '40px', // Space for the document icon
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  readModelIcon: {
+    position: 'absolute',
+    top: '5px',
+    width: '30px',
+    height: '30px',
+    backgroundColor: EVENT_STORMING_READ_MODEL,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: tokens.borderRadiusSmall,
+  },
+  externalSystemNodeEventStorming: {
+    border: `2px solid ${EVENT_STORMING_EXTERNAL_SYSTEM}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  hotSpotNode: {
+    border: `2px solid ${EVENT_STORMING_HOT_SPOT}`,
+    position: 'relative',
+    borderRadius: tokens.borderRadiusMedium,
   },
   // Common styles
   nodeLabel: {
@@ -327,10 +416,155 @@ export const SystemNode = ({ data }: { data: { label: string; description?: stri
   );
 };
 
+// Event Storming node components
+export const DomainEventNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.domainEventNode}`}>
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const CommandNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.commandNode}`}>
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const ActorNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.actorNode}`}>
+      <div className={styles.actorIcon}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="actorIconTitle">
+          <title id="actorIconTitle">Actor Icon</title>
+          <circle cx="12" cy="7" r="5" fill="white"/>
+          <path d="M3 19c0-4.4 3.6-8 8-8h2c4.4 0 8 3.6 8 8" stroke="white" strokeWidth="2"/>
+        </svg>
+      </div>
+      
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const AggregateNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.aggregateNode}`}>
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const PolicyNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.policyNode}`}>
+      <div className={styles.policyIcon}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="policyIconTitle">
+          <title id="policyIconTitle">Policy Icon</title>
+          <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+          <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2"/>
+        </svg>
+      </div>
+      
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const ReadModelNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.readModelNode}`}>
+      <div className={styles.readModelIcon}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="readModelIconTitle">
+          <title id="readModelIconTitle">Read Model Icon</title>
+          <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2" fill="none"/>
+          <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2"/>
+        </svg>
+      </div>
+      
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const ExternalSystemNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.externalSystemNodeEventStorming}`}>
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
+export const HotSpotNode = ({ data }: { data: { label: string; description?: string } }) => {
+  const styles = useStyles();
+  
+  return (
+    <div className={`${styles.eventStormingBase} ${styles.hotSpotNode}`}>
+      <Text className={styles.nodeLabel}>{data.label}</Text>
+      
+      {data.description && (
+        <Text className={styles.nodeDescription}>{data.description}</Text>
+      )}
+    </div>
+  );
+};
+
 // Export all C4 node types
 export const c4NodeTypes = {
   person: PersonNode,
   container: ContainerNode,
   component: ComponentNode,
   system: SystemNode,
+  domainEvent: DomainEventNode,
+  command: CommandNode,
+  actor: ActorNode,
+  aggregate: AggregateNode,
+  policy: PolicyNode,
+  readModel: ReadModelNode,
+  externalSystem: ExternalSystemNode,
+  hotSpot: HotSpotNode,
 };
